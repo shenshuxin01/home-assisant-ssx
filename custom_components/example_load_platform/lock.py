@@ -44,7 +44,7 @@ class ExampleLock(LockEntity):
     _attr_is_jammed = False
 
     def update(self) -> None:
-        self._attr_is_jammed = random.randint(1, 150) == 2
+        self._attr_is_jammed = random.randint(1, 4500) == 2
         _LOGGER.info(f'update.method run!self._attr_is_jammed={self._attr_is_jammed}')
 
     def __init__(self):
