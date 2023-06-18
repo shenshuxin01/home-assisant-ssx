@@ -32,7 +32,7 @@ def setup_platform(
 
 
 def getStreamSource() ->str:
-    streamURL = f"rtsp://"
+    streamURL = f"rtsp://admin:AGXXZI@192.168.0.105:554/h264/ch1/main/av_stream"
     return streamURL
 
 
@@ -42,6 +42,7 @@ class EzvizCamera(Camera,HomeAssistant):
 
     def __init__(self) -> None:
         """Initialize the sensor."""
+        super().__init__()
         self._attr_device_info = "ssx_device_info_EzvizCamera"  # For automatic device registration
         self._attr_unique_id = "ssx_unique_id_EzvizCamera"
         self._attr_is_recording = True
