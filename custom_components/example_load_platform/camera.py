@@ -32,7 +32,8 @@ def setup_platform(
 
 
 def getStreamSource() ->str:
-    streamURL = f"rtsp://admin:AGXXZI@192.168.0.105:554/h264/ch1/main/av_stream"
+    # streamURL = f"rtsp://admin:AGXXZI@192.168.0.105:554/h264/ch1/main/av_stream"
+    streamURL = f"rtsp://admin:AGXXZI@192.168.0.105:554/h264/ch2/sub/av_stream"
     return streamURL
 
 
