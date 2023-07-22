@@ -9,10 +9,9 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from . import DOMAIN, ssx_utils
 import logging
-import random
-
 
 _LOGGER = logging.getLogger(__name__)
+DellR410Info = {"fanSpeed": "-1", "temperature": -1}
 
 
 def setup_platform(
@@ -61,7 +60,9 @@ class DellR410TemperatureSensor(SensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         _LOGGER.debug('update DellR410TemperatureSensor !')
-        self._attr_native_value = ssx_utils.getDellR410Info().temperature
+        global DellR410Info
+        DellR410Info = ssx_utils.getDellR410Info()
+        self._attr_native_value = DellR410Info.temperature
 
 
 class DellR410SpeedSensor(SensorEntity):
@@ -98,4 +99,5 @@ class DellR410SpeedSensor(SensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         _LOGGER.debug('update DellR410SpeedSensor !')
-        self._attr_native_value = ssx_utils.getDellR410Info().speed
+        global DellR410Info
+        self._attr_native_value = DellR410Info.speed

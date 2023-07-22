@@ -14,14 +14,14 @@ class DellR410Info:
 
 def getDellR410Info() -> DellR410Info:
     resp = requests.get(
-        'http://192.168.0.101:30501/developer-function-provider/setDellFan/test/getFanSpeedAndTemperature')
+        'http://192.168.0.101:5000/autoSetDellFanOnceTempAndSpeed')
     # {'temperature': '30', 'speed': 8448.0}
     if resp.status_code != 200:
-        raise IOError('请求dell风扇转速接口失败！！')
-    respJson = resp.json()
+        raise IOError('请求dell风扇转速Python接口失败！！')
+    respJson = resp.json() #{"fanSpeed":"7920","temperature":32}
     d = DellR410Info()
     d.temperature = respJson['temperature']
-    d.speed = respJson['speed']
+    d.speed = respJson['fanSpeed']
     return d
 
 
