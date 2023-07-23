@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime
+import random
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.const import TEMP_CELSIUS
@@ -15,7 +16,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 DellR410Info = {"fanSpeed": "-1", "temperature": -1}
 Next_Update = datetime.datetime.now()
-
+Node12CpuMem = None
 
 def setup_platform(
         hass: HomeAssistant,
@@ -27,7 +28,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([DellR410TemperatureSensor(), DellR410SpeedSensor()])
+    add_entities([DellR410TemperatureSensor(), DellR410SpeedSensor(), Node12CpuMemSensor()])
 
 
 class DellR410TemperatureSensor(SensorEntity):
@@ -110,3 +111,40 @@ class DellR410SpeedSensor(SensorEntity):
         _LOGGER.debug('update DellR410SpeedSensor !')
         global DellR410Info
         self._attr_native_value = DellR410Info.speed
+
+
+class Node12CpuMemSensor(SensorEntity):
+    """Representation of a sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the sensor."""
+        self._attr_native_value = None
+        self._attr_device_info = "ssx_device_info_Node12CpuMemSensor"  # For automatic device registration
+        self._attr_unique_id = "ssx_unique_id_Node12CpuMemSensor"
+        # self._attr_device_class = SensorDeviceClass.SPEED
+
+    @property
+    def name(self) -> str:
+        """Return the name of the sensor."""
+        return 'Node12CpuMemSensor_Sensor'
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        _LOGGER.debug('native_value Node12CpuMemSensor !')
+        return self._attr_native_value
+
+    def update(self) -> None:
+        """Fetch new state data for the sensor.
+
+        This is the only method that should fetch new data for Home Assistant.
+        """
+        _LOGGER.debug('update Node12CpuMemSensor !')
+        global Node12CpuMem
+        # Node12CpuMem = ssx_utils.getNode12CpuMemInfo()
+        # self._attr_native_value = Node12CpuMem
+        self._attr_native_value = f'myssxNode12CpuMemSensor_{random.randint(1, 4500)}'
+
+
+
+
