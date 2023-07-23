@@ -31,7 +31,7 @@ def setup_platform(
 class DemoText(TextEntity):
     _attr_has_entity_name = True
     # The value of the text.
-    _attr_native_value = False
+    _attr_native_value = 'DemoText'
 
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
