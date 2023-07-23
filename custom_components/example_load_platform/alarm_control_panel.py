@@ -49,7 +49,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     # arming	The alarm is arming.
     # disarming	The alarm is disarming.
     # triggered	The alarm is triggered.
-    _attr_state = 'arming'
+    _attr_state = 'armed_home'
 
     @property
     def supported_features(self):
@@ -68,36 +68,45 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
 
     def alarm_disarm(self, code=None) -> None:
         """Send disarm command."""
-        _LOGGER.info(f'alarm_disarm Run')
+        _LOGGER.info(f'alarm_disarm Run,codeInfo:{code}')
+        self._attr_state = 'disarming'
+        time.sleep(1)
+        self._attr_state = 'disarmed'
 
     def alarm_arm_home(self, code=None) -> None:
         """Send arm home command."""
-        _LOGGER.info(f'alarm_arm_home Run')
+        _LOGGER.info(f'alarm_arm_home Run,codeInfo:{code}')
+        self._attr_state = 'armed_home'
 
     def alarm_arm_away(self, code=None) -> None:
         """Send arm away command."""
-        _LOGGER.info(f'alarm_arm_away Run')
+        _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
+        self._attr_state = 'armed_away'
 
     def alarm_arm_night(self, code=None) -> None:
         """Send arm night command."""
-        _LOGGER.info(f'alarm_arm_night Run')
+        _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
+        self._attr_state = 'armed_night'
 
     def alarm_arm_vacation(self, code=None) -> None:
         """Send arm vacation command."""
-        _LOGGER.info(f'alarm_arm_vacation Run')
+        _LOGGER.info(f'alarm_arm_vacation Run,codeInfo:{code}')
+        self._attr_state = 'armed_vacation'
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
-        _LOGGER.info(f'alarm_trigger Run')
+        _LOGGER.info(f'alarm_trigger Run,codeInfo:{code}')
+        self._attr_state = 'pending'
+        time.sleep(1000)
+        self._attr_state = 'triggered'
 
     def alarm_arm_custom_bypass(self, code=None) -> None:
         """Send arm custom bypass command."""
-        _LOGGER.info(f'alarm_arm_custom_bypass Run')
+        _LOGGER.info(f'alarm_arm_custom_bypass Run,codeInfo:{code}')
+        self._attr_state = 'armed_custom_bypass'
 
     def update(self) -> None:
-        _LOGGER.info(f'update.method run!')
         self._attr_changed_by = f'ssx_{str(random.randint(1, 10))}'
-        r = random.randint(1, 10)
         # disarmed	The alarm is disarmed (off).
         # armed_home	The alarm is armed in home mode.
         # armed_away	The alarm is armed in away mode.
@@ -108,23 +117,8 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         # arming	The alarm is arming.
         # disarming	The alarm is disarming.
         # triggered	The alarm is triggered.
-        if r == 1:
-            self._attr_state = 'disarmed'
-        elif r == 2:
-            self._attr_state = 'armed_home'
-        elif r == 3:
-            self._attr_state = 'armed_away'
-        elif r == 4:
-            self._attr_state = 'armed_night'
-        elif r == 5:
-            self._attr_state = 'armed_vacation'
-        elif r == 6:
-            self._attr_state = 'armed_custom_bypass'
-        elif r == 7:
-            self._attr_state = 'pending'
-        elif r == 8:
-            self._attr_state = 'arming'
-        elif r == 9:
-            self._attr_state = 'disarming'
-        elif r == 10:
-            self._attr_state = 'triggered'
+        # if 陌生人来访：
+        #     self._attr_state = 'arming'
+        # if 陌生人进门啦：
+        #     self.alarm_trigger(None)
+        _LOGGER.info(f'update.method run!,state:{self._attr_state}')
