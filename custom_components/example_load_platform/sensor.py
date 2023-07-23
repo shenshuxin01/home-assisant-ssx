@@ -1,6 +1,8 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
+import datetime
+
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.const import TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
@@ -12,6 +14,7 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 DellR410Info = {"fanSpeed": "-1", "temperature": -1}
+Next_Update = datetime.datetime.now()
 
 
 def setup_platform(
@@ -60,7 +63,13 @@ class DellR410TemperatureSensor(SensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         _LOGGER.debug('update DellR410TemperatureSensor !')
-        global DellR410Info
+        global DellR410Info, Next_Update
+        if datetime.datetime.now() < Next_Update:
+            _LOGGER.debug('下次执行时间未到，不执行')
+            return
+        else:
+            _LOGGER.debug('下次执行时间到啦，执行')
+            Next_Update = datetime.datetime.now() + datetime.timedelta(minutes=1)
         DellR410Info = ssx_utils.getDellR410Info()
         self._attr_native_value = DellR410Info.temperature
 
