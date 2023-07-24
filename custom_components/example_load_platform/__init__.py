@@ -1,7 +1,6 @@
 """Example Load Platform integration."""
 from __future__ import annotations
 
-from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
@@ -17,7 +16,6 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
         'ssxVar1': 'hello world'
     }
 
-    SCAN_INTERVAL = timedelta(seconds=5)
     hass.helpers.discovery.load_platform('sensor', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('lock', DOMAIN, {}, config)
