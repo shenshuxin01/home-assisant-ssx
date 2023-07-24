@@ -15,7 +15,7 @@ import random
 
 _LOGGER = logging.getLogger(__name__)
 
-# SCAN_INTERVAL = timedelta(seconds=5)
+SCAN_INTERVAL = timedelta(hours=4)
 
 def setup_platform(
         hass: HomeAssistant,
@@ -27,7 +27,6 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    # SCAN_INTERVAL = timedelta(seconds=6)
     add_entities([DemoText()])
 
 
@@ -35,8 +34,6 @@ class DemoText(TextEntity):
     _attr_has_entity_name = True
     # The value of the text.
     _attr_native_value = 'DemoText'
-
-    SCAN_INTERVAL = timedelta(seconds=7)
 
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')

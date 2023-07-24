@@ -18,6 +18,9 @@ DellR410Info = {"fanSpeed": "-1", "temperature": -1}
 Next_Update = datetime.datetime.now()
 Node12CpuMem = None
 
+SCAN_INTERVAL = datetime.timedelta(seconds=60)
+
+
 def setup_platform(
         hass: HomeAssistant,
         config: ConfigType,
