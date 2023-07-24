@@ -72,11 +72,9 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     def extra_state_attributes(self):
         """Return the state attributes."""
         # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
-        attributes = super().extra_state_attributes
-        _LOGGER.error("attributes start")
-        _LOGGER.error(type(attributes))
-        _LOGGER.error(attributes)
-        _LOGGER.error("attributes end")
+        attributes = {
+            "context": f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
+        }
         return attributes
 
     def alarm_disarm(self, code=None) -> None:
