@@ -15,6 +15,7 @@ import random
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = timedelta(seconds=5)
 
 def setup_platform(
         hass: HomeAssistant,
@@ -26,7 +27,8 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([DemoText(hass)], update_before_add=True)
+    SCAN_INTERVAL = timedelta(seconds=5)
+    add_entities([DemoText()])
 
 
 class DemoText(TextEntity):
@@ -36,14 +38,7 @@ class DemoText(TextEntity):
 
     SCAN_INTERVAL = timedelta(seconds=5)
 
-    def __init__(self,hass):
-        """Initialize my coordinator."""
-        super().__init__(
-            hass,
-            _LOGGER,
-            # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=10)
-        )
+    def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init DemoText start!')
         self._attr_device_info = "ssx_DemoText_attr_device_info"  # For automatic device registration
