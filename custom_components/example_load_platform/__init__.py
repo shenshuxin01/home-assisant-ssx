@@ -22,5 +22,4 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.helpers.discovery.load_platform('alarm_control_panel', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('text', DOMAIN, {}, config)
 
-    hass.states.set("example_load_platform.alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id", 'hello ssx extra')
     return True

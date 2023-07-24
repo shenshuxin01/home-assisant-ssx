@@ -27,6 +27,8 @@ def setup_platform(
     if discovery_info is None:
         return
     add_entities([Node12AlarmControlPanel()])
+    hass.states.set("example_load_platform.alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id", 'hello ssx extra')
+
 
 
 # https://developers.home-assistant.io/docs/core/entity/alarm-control-panel
