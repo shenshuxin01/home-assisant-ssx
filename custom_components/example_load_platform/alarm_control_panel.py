@@ -30,7 +30,18 @@ def setup_platform(
     hass.states.set("alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id", 'hello ssx extra')
     _LOGGER.error("hass.states")
     _LOGGER.error(type(hass.states))
-    _LOGGER.error(hass.states)
+    _LOGGER.error(hass.states.__dict__)
+    _LOGGER.error(hass.states.__dict__)
+    # 直接用字典了
+    dict1 = hass.states.__dict__
+    # 先看一下3个方法返回的可迭代对象
+    _LOGGER.error(dict1.items())
+    _LOGGER.error(dict1.keys())
+    _LOGGER.error(dict1.values())
+    # 用下面的方法输出
+    _LOGGER.error('\n'.join(('%s:%s' % item for item in dict1.items())))  # 每行一对key和value，中间是分号
+    _LOGGER.error(' '.join(('%s' % item for item in dict1.keys())))  # 所有的key打印一行
+    _LOGGER.error(' '.join(('%s' % item for item in dict1.values())))  # 所有的value打印一行
 
 
 
@@ -74,6 +85,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
+        _LOGGER.info(f'extra_state_attributes Run')
         # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
         attributes = {
         }
