@@ -15,7 +15,7 @@ import random
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(seconds=5)
+# SCAN_INTERVAL = timedelta(seconds=5)
 
 def setup_platform(
         hass: HomeAssistant,
@@ -27,7 +27,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    SCAN_INTERVAL = timedelta(seconds=6)
+    # SCAN_INTERVAL = timedelta(seconds=6)
     add_entities([DemoText()])
 
 
