@@ -71,7 +71,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
-        return {"ssx_custom_state_reason": '你好！',"stateA": self._attr_state}
+        return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
 
     def alarm_disarm(self, code=None) -> None:
         """Send disarm command."""
