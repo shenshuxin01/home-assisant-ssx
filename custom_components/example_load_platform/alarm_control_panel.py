@@ -28,6 +28,9 @@ def setup_platform(
         return
     add_entities([Node12AlarmControlPanel()])
     hass.states.set("alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id", 'hello ssx extra')
+    _LOGGER.error("hass.states")
+    _LOGGER.error(type(hass.states))
+    _LOGGER.error(hass.states)
 
 
 
@@ -73,12 +76,6 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         """Return the state attributes."""
         # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
         attributes = {
-            "state":{
-                "name": f'extra_state_attributes_state{random.randint(1, 4500)}'
-            },
-            "states": f'extra_state_attributes_states{random.randint(1, 4500)}',
-            "name": f'extra_state_attributes_name{random.randint(1, 4500)}',
-            "context": f'extra_state_attributes_context{random.randint(1, 4500)}',
         }
         return attributes
 
