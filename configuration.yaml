@@ -57,7 +57,7 @@ alarm_control_panel:
 
 # Example configuration.yaml entry
 logger:
-  default: error
+  default: info
   logs:
-    custom_components.example_load_platform: info
-    custom_components.hass_cozylife_local_pull: info
+    custom_components.example_load_platform: debug
+    custom_components.hass_cozylife_local_pull: debug
