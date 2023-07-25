@@ -57,5 +57,5 @@ alarm_control_panel:
 logger:
   default: info
   logs:
-    custom_components.example_load_platform: debug
-    custom_components.hass_cozylife_local_pull: debug
+    custom_components.example_load_platform: info
+    custom_components.hass_cozylife_local_pull: info
