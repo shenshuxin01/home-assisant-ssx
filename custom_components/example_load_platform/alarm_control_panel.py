@@ -150,10 +150,10 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
 
         info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
         _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
-        if info.cpu > 100:
+        if float(info.cpu) > 100:
             self.__error_msg = f'CPU异常:{info.cpuDesc}'
             self.alarm_trigger(None)
-        elif info.mem > 80:
+        elif float(info.mem) > 80:
             self.__error_msg = f'MEM异常:{info.memDesc}'
             self.alarm_trigger(None)
         else:
