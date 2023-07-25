@@ -1,7 +1,7 @@
 """Example Load Platform integration."""
 from __future__ import annotations
 
-
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
@@ -20,7 +20,8 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('lock', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('camera', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform('alarm_control_panel', DOMAIN, {}, config)
+    # hass.helpers.discovery.load_platform('alarm_control_panel', DOMAIN, {}, config)
+    hass.helpers.discovery.load_platform(Platform.ALARM_CONTROL_PANEL, 'ssx_platform_acp1', {}, config)
     hass.helpers.discovery.load_platform('text', DOMAIN, {}, config)
 
     return True
