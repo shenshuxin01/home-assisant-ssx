@@ -67,14 +67,15 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_device_info = "ssx_Node12AlarmControlPanel_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "ssx_Node12AlarmControlPanel_attr_unique_id"
 
-    # @property
-    # def extra_state_attributes(self):
-    #     """Return the state attributes."""
-    #     _LOGGER.info(f'extra_state_attributes Run')
-    #     # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
-    #     attributes = {
-    #     }
-    #     return attributes
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes."""
+        _LOGGER.info(f'extra_state_attributes Run')
+        # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
+        attributes = {
+            'ssx_diy': f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
+        }
+        return attributes
 
     def alarm_disarm(self, code=None) -> None:
         """Send disarm command."""

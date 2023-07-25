@@ -32,17 +32,18 @@ alarm_control_panel:
   - platform: template
     panels:
       safe_alarm_panel:
-        value_template: "{{ states('alarm_control_panel.real_alarm') }}"
+        value_template: "{{ states('alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id') }}"
+#        value_template: "{{ states('alarm_control_panel.real_alarm') }}"
         arm_away:
           service: alarm_control_panel.alarm_arm_away
           target:
-            entity_id: alarm_control_panel.real_alarm
+            entity_id: alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id
           data:
             code: !secret alarm_code
         arm_home:
           service: alarm_control_panel.alarm_arm_home
           target:
-            entity_id: alarm_control_panel.real_alarm
+            entity_id: alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id
           data:
             code: !secret alarm_code
         disarm:
@@ -51,7 +52,7 @@ alarm_control_panel:
             state: "home"
           - service: alarm_control_panel.alarm_disarm
             target:
-              entity_id: alarm_control_panel.real_alarm
+              entity_id: alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id
             data:
               code: !secret alarm_code
 
