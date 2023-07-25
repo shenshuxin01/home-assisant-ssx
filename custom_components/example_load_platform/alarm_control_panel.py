@@ -1,6 +1,8 @@
 """Platform for alarm_control_panel integration."""
 from __future__ import annotations
 
+import datetime
+import json
 import time
 
 from homeassistant.components.alarm_control_panel import AlarmControlPanelEntity, CodeFormat, \
@@ -9,12 +11,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
-from . import DOMAIN
+from . import DOMAIN, ssx_utils
 import logging
 import random
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = datetime.timedelta(seconds=120)
 
 def setup_platform(
         hass: HomeAssistant,
@@ -27,7 +30,8 @@ def setup_platform(
     if discovery_info is None:
         return
     add_entities([Node12AlarmControlPanel()])
-    hass.states.set("alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id", 'hello ssx extra')
+    hass.states.set("alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique",
+                    'helloWorld初始化v')
 
 
 # https://developers.home-assistant.io/docs/core/entity/alarm-control-panel
@@ -37,7 +41,8 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     _attr_changed_by = 'ssx001'
     # code_format	string	None	Regex for code format or None if no code is required.
     _attr_code_format = CodeFormat.TEXT
-    __error_msg: str = '报警监控panel'
+    __error_msg: str = '报警监控'
+    __run_flag: bool = True
 
     # States
     # Value	Description
@@ -65,16 +70,15 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init Node12AlarmControlPanel start!')
-        self._attr_device_info = "ssx_Node12AlarmControlPanel_attr_device_info"  # For automatic device registration
-        self._attr_unique_id = "ssx_Node12AlarmControlPanel_attr_unique_id"
+        self._attr_device_info = "Node12AlarmControlPanelDevice"  # For automatic device registration
+        self._attr_unique_id = "Node12AlarmControlPanelDeviceUnique"
 
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
-        _LOGGER.info(f'extra_state_attributes Run')
-        # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}' 默认30s刷新一次
+        _LOGGER.debug(f'extra_state_attributes Run')
         attributes = {
-            'ssx_diy': f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}',
+            'ssx_diy': f'myssx_{random.randint(1, 10)}',
             'friendly_name': self.__error_msg
         }
         return attributes
@@ -85,26 +89,31 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_state = 'disarming'
         time.sleep(1)
         self._attr_state = 'disarmed'
+        self.__run_flag = False
 
     def alarm_arm_home(self, code=None) -> None:
         """Send arm home command."""
         _LOGGER.info(f'alarm_arm_home Run,codeInfo:{code}')
         self._attr_state = 'armed_home'
+        self.__run_flag = True
 
     def alarm_arm_away(self, code=None) -> None:
         """Send arm away command."""
         _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
         self._attr_state = 'armed_away'
+        self.__run_flag = True
 
     def alarm_arm_night(self, code=None) -> None:
         """Send arm night command."""
         _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
         self._attr_state = 'armed_night'
+        self.__run_flag = True
 
     def alarm_arm_vacation(self, code=None) -> None:
         """Send arm vacation command."""
         _LOGGER.info(f'alarm_arm_vacation Run,codeInfo:{code}')
         self._attr_state = 'armed_vacation'
+        self.__run_flag = True
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
@@ -112,14 +121,18 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_state = 'pending'
         time.sleep(1000)
         self._attr_state = 'triggered'
+        self.__run_flag = True
 
     def alarm_arm_custom_bypass(self, code=None) -> None:
         """Send arm custom bypass command."""
         _LOGGER.info(f'alarm_arm_custom_bypass Run,codeInfo:{code}')
         self._attr_state = 'armed_custom_bypass'
+        self.__run_flag = True
 
     def update(self) -> None:
-        self.__error_msg = f'报警监控panel{random.randint(1, 10)}'
+        _LOGGER.info(f'update.method run!,state:{self._attr_state}')
+        if not self.__run_flag:
+            return
         # disarmed	The alarm is disarmed (off).
         # armed_home	The alarm is armed in home mode.
         # armed_away	The alarm is armed in away mode.
@@ -134,4 +147,14 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         #     self._attr_state = 'arming'
         # if 陌生人进门啦：
         #     self.alarm_trigger(None)
-        _LOGGER.info(f'update.method run!,state:{self._attr_state}')
+
+        info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
+        _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
+        if info.cpu > 100:
+            self.__error_msg = f'CPU异常:{info.cpuDesc}'
+            self.alarm_trigger(None)
+        elif info.mem > 80:
+            self.__error_msg = f'MEM异常:{info.memDesc}'
+            self.alarm_trigger(None)
+        else:
+            self.__error_msg = f'正常CPU{info.cpu},MEM{info.mem}'

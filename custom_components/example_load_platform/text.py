@@ -15,7 +15,7 @@ import random
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(hours=4)
+SCAN_INTERVAL = timedelta(hours=20)
 
 def setup_platform(
         hass: HomeAssistant,
