@@ -37,6 +37,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     _attr_changed_by = 'ssx001'
     # code_format	string	None	Regex for code format or None if no code is required.
     _attr_code_format = CodeFormat.TEXT
+    __error_msg: str = '报警监控panel'
 
     # States
     # Value	Description
@@ -61,10 +62,6 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
                | AlarmControlPanelEntityFeature.ARM_CUSTOM_BYPASS \
                | AlarmControlPanelEntityFeature.ARM_VACATION
 
-    @property
-    def code_format(self):
-        return CodeFormat('v11','nmes12')
-
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init Node12AlarmControlPanel start!')
@@ -78,7 +75,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}' 默认30s刷新一次
         attributes = {
             'ssx_diy': f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}',
-            'friendly_name': f'报警了吗:{random.randint(1, 4500)}',
+            'friendly_name': self.__error_msg
         }
         return attributes
 
@@ -122,7 +119,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_state = 'armed_custom_bypass'
 
     def update(self) -> None:
-        self._attr_changed_by = f'ssx_{str(random.randint(1, 10))}'
+        self.__error_msg = f'报警监控panel{random.randint(1, 10)}'
         # disarmed	The alarm is disarmed (off).
         # armed_home	The alarm is armed in home mode.
         # armed_away	The alarm is armed in away mode.
