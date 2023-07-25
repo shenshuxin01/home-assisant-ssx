@@ -33,7 +33,7 @@ alarm_control_panel:
     panels:
       safe_alarm_panel:
         value_template: "{{ states('alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id') }}"
-#        value_template: "{{ states('alarm_control_panel.real_alarm') }}"
+#        value_template: "{{ state_attr('alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id','ssx_diy') }}"
         arm_away:
           service: alarm_control_panel.alarm_arm_away
           target:
@@ -47,9 +47,6 @@ alarm_control_panel:
           data:
             code: !secret alarm_code
         disarm:
-          - condition: state
-            entity_id: device_tracker.paulus
-            state: "home"
           - service: alarm_control_panel.alarm_disarm
             target:
               entity_id: alarm_control_panel.example_load_platform_ssx_node12alarmcontrolpanel_attr_unique_id

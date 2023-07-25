@@ -71,9 +71,10 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     def extra_state_attributes(self):
         """Return the state attributes."""
         _LOGGER.info(f'extra_state_attributes Run')
-        # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
+        # return f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}' 默认30s刷新一次
         attributes = {
-            'ssx_diy': f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}'
+            'ssx_diy': f'myssxNode12AlarmControlPanel_extra_state_attributes_{random.randint(1, 4500)}',
+            'friendly_name': f'报警了吗:{random.randint(1, 4500)}',
         }
         return attributes
 
