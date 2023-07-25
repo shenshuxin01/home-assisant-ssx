@@ -61,6 +61,10 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
                | AlarmControlPanelEntityFeature.ARM_CUSTOM_BYPASS \
                | AlarmControlPanelEntityFeature.ARM_VACATION
 
+    @property
+    def code_format(self):
+        return CodeFormat('v11','nmes12')
+
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init Node12AlarmControlPanel start!')
