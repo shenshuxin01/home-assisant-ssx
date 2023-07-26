@@ -6,8 +6,7 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-#开启rest服务调用
-api:
+#开启rest服务调用api:
 
 # Text to speech
 tts:
@@ -21,11 +20,9 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-#拼多多购买的cozylife灯泡和插座
-hass_cozylife_local_pull:
+#拼多多购买的cozylife灯泡和插座hass_cozylife_local_pull:
 
-#自定义ssx插件
-example_load_platform:
+#自定义ssx插件example_load_platform:
 
 # Example configuration.yaml entry
 alarm_control_panel:
@@ -60,8 +57,8 @@ logger:
     custom_components.example_load_platform: info
     custom_components.hass_cozylife_local_pull: info
 
-# Example configuration.yaml entry
+# 配置nginx代理
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 192.168.0.101
+    - 10.234.104.88
