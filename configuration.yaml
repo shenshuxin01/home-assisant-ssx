@@ -59,3 +59,9 @@ logger:
   logs:
     custom_components.example_load_platform: info
     custom_components.hass_cozylife_local_pull: info
+
+# Example configuration.yaml entry
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.0.101
