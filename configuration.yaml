@@ -6,7 +6,8 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-#开启rest服务调用api:
+#开启rest服务调用
+api:
 
 # Text to speech
 tts:
@@ -20,9 +21,11 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-#拼多多购买的cozylife灯泡和插座hass_cozylife_local_pull:
+#拼多多购买的cozylife灯泡和插座
+hass_cozylife_local_pull:
 
-#自定义ssx插件example_load_platform:
+#自定义ssx插件
+example_load_platform:
 
 # Example configuration.yaml entry
 alarm_control_panel:
