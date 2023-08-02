@@ -73,3 +73,7 @@ http:
 #      trusted_networks:
 #        - 10.234.104.88
 #      allow_bypass_login: true
+
+homeassistant:
+  media_dirs:
+    media: /media
