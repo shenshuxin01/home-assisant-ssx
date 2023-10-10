@@ -59,7 +59,8 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     @property
     def supported_features(self):
         return AlarmControlPanelEntityFeature.ARM_HOME \
-               | AlarmControlPanelEntityFeature.ARM_AWAY
+               | AlarmControlPanelEntityFeature.ARM_AWAY \
+               | AlarmControlPanelEntityFeature.ARM_NIGHT
 
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
@@ -73,7 +74,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         _LOGGER.debug(f'extra_state_attributes Run')
         attributes = {
             'ssx_diy': f'myssx_{random.randint(1, 10)}',
-            # 'friendly_name': self.__error_msg
+            'friendly_name': "gh监控面板"
         }
         return attributes
 
@@ -83,7 +84,6 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_state = 'disarming'
         time.sleep(1)
         self._attr_state = 'disarmed'
-        self.__run_flag = False
 
     def alarm_arm_home(self, code=None) -> None:
         """Send arm home command."""
@@ -96,13 +96,15 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
         self._attr_state = 'armed_away'
 
+    def alarm_arm_night(self, code=None) -> None:
+        """Send arm night command."""
+        _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
+        self._attr_state = 'armed_night'
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
         _LOGGER.info(f'alarm_trigger Run,codeInfo:{code}')
         self._attr_state = 'triggered'
-
-
 
     def update(self) -> None:
         _LOGGER.info(f'update.method run!,state:{self._attr_state}')
@@ -121,6 +123,9 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         # if 陌生人进门啦：
         #     self.alarm_trigger(None)
 
+        if 'disarmed'.__eq__(self._attr_state):
+            return
+
         info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
         _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
         if float(info.cpu) > 500:
@@ -131,6 +136,4 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
             _LOGGER.error(f'MEM异常:{info.memDesc}')
             self._attr_state = 'pending'
             self.alarm_trigger(None)
-        else:
-            self._attr_state = 'armed_away'
 
