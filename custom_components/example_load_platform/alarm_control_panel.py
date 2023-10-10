@@ -118,8 +118,6 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
         _LOGGER.info(f'alarm_trigger Run,codeInfo:{code}')
-        self._attr_state = 'pending'
-        time.sleep(1000)
         self._attr_state = 'triggered'
         self.__run_flag = True
 
@@ -150,11 +148,22 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
 
         info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
         _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
-        if float(info.cpu) > 100:
+        prefix = ''
+        if float(info.cpu) > 80:
             self.__error_msg = f'CPU异常:{info.cpuDesc}'
-            self.alarm_trigger(None)
+            prefix = 'CPU异常!'
+            self._attr_state = 'triggered' if self._attr_state == 'pending' else 'pending'
+            if self._attr_state == 'pending':
+                self._attr_state = 'triggered'
+            elif self._attr_state == 'pending':
+                self._attr_state = 'triggered'
         elif float(info.mem) > 80:
+            prefix = 'MEM异常!'
             self.__error_msg = f'MEM异常:{info.memDesc}'
+            self._attr_state = 'pending'
             self.alarm_trigger(None)
         else:
-            self.__error_msg = f'正常CPU{info.cpu},MEM{info.mem}'
+            prefix = '正常,'
+            self._attr_state = 'armed_away'
+        self.__error_msg = f'{prefix}CPU{info.cpu},MEM{info.mem}'
+
