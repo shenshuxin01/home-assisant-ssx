@@ -57,7 +57,7 @@ example_load_platform:
 logger:
   default: error
   logs:
-    custom_components.example_load_platform: warn
+    custom_components.example_load_platform: info
     custom_components.hass_cozylife_local_pull: warn
 
 # 配置nginx代理
