@@ -64,7 +64,7 @@ logger:
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 10.234.104.88
+    - 10.234.105.88
 
 #当您从这些网络之一登录时，系统会询问您使用哪个用户帐户，并且不需要输入密码。如果开启此项，那么非下面的ip就不能访问啦，其他的验证方式也都失效
 #homeassistant:
