@@ -30,8 +30,8 @@ def setup_platform(
     if discovery_info is None:
         return
     add_entities([Node12AlarmControlPanel()])
-    hass.states.set("alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique",
-                    'armed_home')
+    # hass.states.set("alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique",
+    #                 'armed_home')
 
 
 # https://developers.home-assistant.io/docs/core/entity/alarm-control-panel
