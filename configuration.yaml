@@ -28,37 +28,37 @@ hass_cozylife_local_pull:
 example_load_platform:
 
 # Example configuration.yaml entry
-alarm_control_panel:
-  - platform: template
-    panels:
-      safe_alarm_panel:
-        value_template: "{{ states('alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique') }}"
-#        value_template: "{{ state_attr('alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique','ssx_diy') }}"
-        arm_away:
-          service: alarm_control_panel.alarm_arm_away
-          target:
-            entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
-          data:
-            code: !secret alarm_code
-        arm_home:
-          service: alarm_control_panel.alarm_arm_home
-          target:
-            entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
-          data:
-            code: !secret alarm_code
-        disarm:
-          - service: alarm_control_panel.alarm_disarm
-            target:
-              entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
-            data:
-              code: !secret alarm_code
+#alarm_control_panel:
+#  - platform: template
+#    panels:
+#      safe_alarm_panel:
+#        value_template: "{{ states('alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique') }}"
+##        value_template: "{{ state_attr('alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique','ssx_diy') }}"
+#        arm_away:
+#          service: alarm_control_panel.alarm_arm_away
+#          target:
+#            entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
+#          data:
+#            code: !secret alarm_code
+#        arm_home:
+#          service: alarm_control_panel.alarm_arm_home
+#          target:
+#            entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
+#          data:
+#            code: !secret alarm_code
+#        disarm:
+#          - service: alarm_control_panel.alarm_disarm
+#            target:
+#              entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
+#            data:
+#              code: !secret alarm_code
 
 # Example configuration.yaml entry
 logger:
-  default: info
+  default: error
   logs:
-    custom_components.example_load_platform: info
-    custom_components.hass_cozylife_local_pull: info
+    custom_components.example_load_platform: warn
+    custom_components.hass_cozylife_local_pull: warn
 
 # 配置nginx代理
 http:

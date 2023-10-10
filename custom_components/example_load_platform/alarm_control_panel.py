@@ -41,8 +41,6 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     _attr_changed_by = 'ssx001'
     # code_format	string	None	Regex for code format or None if no code is required.
     _attr_code_format = CodeFormat.TEXT
-    __error_msg: str = '报警监控'
-    __run_flag: bool = True
 
     # States
     # Value	Description
@@ -61,11 +59,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     @property
     def supported_features(self):
         return AlarmControlPanelEntityFeature.ARM_HOME \
-               | AlarmControlPanelEntityFeature.ARM_AWAY \
-               | AlarmControlPanelEntityFeature.ARM_NIGHT \
-               | AlarmControlPanelEntityFeature.TRIGGER \
-               | AlarmControlPanelEntityFeature.ARM_CUSTOM_BYPASS \
-               | AlarmControlPanelEntityFeature.ARM_VACATION
+               | AlarmControlPanelEntityFeature.ARM_AWAY
 
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
@@ -79,7 +73,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         _LOGGER.debug(f'extra_state_attributes Run')
         attributes = {
             'ssx_diy': f'myssx_{random.randint(1, 10)}',
-            'friendly_name': self.__error_msg
+            # 'friendly_name': self.__error_msg
         }
         return attributes
 
@@ -95,42 +89,23 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         """Send arm home command."""
         _LOGGER.info(f'alarm_arm_home Run,codeInfo:{code}')
         self._attr_state = 'armed_home'
-        self.__run_flag = True
+
 
     def alarm_arm_away(self, code=None) -> None:
         """Send arm away command."""
         _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
         self._attr_state = 'armed_away'
-        self.__run_flag = True
 
-    def alarm_arm_night(self, code=None) -> None:
-        """Send arm night command."""
-        _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
-        self._attr_state = 'armed_night'
-        self.__run_flag = True
-
-    def alarm_arm_vacation(self, code=None) -> None:
-        """Send arm vacation command."""
-        _LOGGER.info(f'alarm_arm_vacation Run,codeInfo:{code}')
-        self._attr_state = 'armed_vacation'
-        self.__run_flag = True
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
         _LOGGER.info(f'alarm_trigger Run,codeInfo:{code}')
         self._attr_state = 'triggered'
-        self.__run_flag = True
 
-    def alarm_arm_custom_bypass(self, code=None) -> None:
-        """Send arm custom bypass command."""
-        _LOGGER.info(f'alarm_arm_custom_bypass Run,codeInfo:{code}')
-        self._attr_state = 'armed_custom_bypass'
-        self.__run_flag = True
+
 
     def update(self) -> None:
         _LOGGER.info(f'update.method run!,state:{self._attr_state}')
-        if not self.__run_flag:
-            return
         # disarmed	The alarm is disarmed (off).
         # armed_home	The alarm is armed in home mode.
         # armed_away	The alarm is armed in away mode.
@@ -148,22 +123,14 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
 
         info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
         _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
-        prefix = ''
-        if float(info.cpu) > 80:
-            self.__error_msg = f'CPU异常:{info.cpuDesc}'
-            prefix = 'CPU异常!'
-            self._attr_state = 'triggered' if self._attr_state == 'pending' else 'pending'
-            if self._attr_state == 'pending':
-                self._attr_state = 'triggered'
-            elif self._attr_state == 'pending':
-                self._attr_state = 'triggered'
+        if float(info.cpu) > 500:
+            _LOGGER.error(f'CPU异常:{info.cpuDesc}')
+            self._attr_state = 'pending'
+            self.alarm_trigger(None)
         elif float(info.mem) > 80:
-            prefix = 'MEM异常!'
-            self.__error_msg = f'MEM异常:{info.memDesc}'
+            _LOGGER.error(f'MEM异常:{info.memDesc}')
             self._attr_state = 'pending'
             self.alarm_trigger(None)
         else:
-            prefix = '正常,'
             self._attr_state = 'armed_away'
-        self.__error_msg = f'{prefix}CPU{info.cpu},MEM{info.mem}'
 
