@@ -44,7 +44,7 @@ class DellR410CpuText(TextEntity):
     def update(self) -> None:
         _LOGGER.info(f'update.method run!')
         info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
-        if float(info.cpu) > 500:
+        if float(info.cpu) > 100:
             self._attr_native_value = info.cpuDesc[0:255]
         else:
             self._attr_native_value = ''
