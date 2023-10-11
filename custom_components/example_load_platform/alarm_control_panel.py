@@ -74,7 +74,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         _LOGGER.debug(f'extra_state_attributes Run')
         attributes = {
             'ssx_diy': f'myssx_{random.randint(1, 10)}',
-            'friendly_name': "gh监控面板"
+            'friendly_name': f'gh监控面板_{random.randint(1, 10)}'
         }
         return attributes
 
