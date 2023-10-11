@@ -30,7 +30,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([DellR410TemperatureSensor(), DellR410SpeedSensor()])
+    add_entities([DellR410TemperatureSensor(), DellR410SpeedSensor(), DellR410CpuSensor()])
 
 
 class DellR410TemperatureSensor(SensorEntity):
@@ -105,6 +105,44 @@ class DellR410SpeedSensor(SensorEntity):
         _LOGGER.debug('update DellR410SpeedSensor !')
         global DellR410Info
         self._attr_native_value = DellR410Info.speed
+
+
+class DellR410CpuSensor(SensorEntity):
+    """Representation of a sensor."""
+
+    def __init__(self) -> None:
+        """Initialize the sensor."""
+        self._attr_native_value = None
+        self._attr_device_info = "DellR410CpuSensorDevice"  # For automatic device registration
+        self._attr_unique_id = "DellR410CpuSensorDeviceUnique"
+        self._attr_device_class = SensorDeviceClass.HUMIDITY
+
+    @property
+    def name(self) -> str:
+        """Return the name of the sensor."""
+        return 'DellR410处理器使用率'
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        _LOGGER.debug('native_value DellR410CpuSensor !')
+        return self._attr_native_value
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        """Return the unit of measurement."""
+        _LOGGER.debug('native_unit_of_measurement DellR410CpuSensor !')
+        # FAN MOD 1A RPM   | 9960 RPM          | ok
+        return "%"
+
+    def update(self) -> None:
+        """Fetch new state data for the sensor.
+        This is the only method that should fetch new data for Home Assistant.
+        """
+        _LOGGER.debug('update DellR410CpuSensor !')
+        info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
+        _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
+        self._attr_native_value = info.cpu
 
 
 
