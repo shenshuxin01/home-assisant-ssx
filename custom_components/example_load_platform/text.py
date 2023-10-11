@@ -44,10 +44,7 @@ class DellR410CpuText(TextEntity):
     def update(self) -> None:
         _LOGGER.info(f'update.method run!')
         info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
-        self._attr_native_value = f'cpu:{info.cpu}\n' \
-                                  f'cpuDesc:{info.cpuDesc}\n' \
-                                  f'mem:{info.mem}\n' \
-                                  f'memDesc:{info.memDesc}'
+        self._attr_native_value = info.cpu
 
     def set_value(self, value: str) -> None:
         """Set the text value."""
