@@ -13,9 +13,9 @@ class DellR410Info:
 
 class DellR410Node12CpuMemInfo:
     cpu: float = None
-    cpuDesc: float = None
+    cpuDesc: str = None
     mem: float = None
-    memDesc: float = None
+    memDesc: str = None
 
 
 def getDellR410Info() -> DellR410Info:
