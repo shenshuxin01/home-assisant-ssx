@@ -6,7 +6,7 @@ from homeassistant.components import ffmpeg
 from homeassistant.components.camera import (
     SUPPORT_ON_OFF,
     SUPPORT_STREAM,
-    Camera, StreamType,
+    Camera, StreamType
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -37,7 +37,7 @@ def getStreamSource() ->str:
     return streamURL
 
 
-class EzvizCamera(Camera,HomeAssistant):
+class EzvizCamera(Camera):
     """Representation of a sensor."""
     _attr_has_entity_name = True
 
