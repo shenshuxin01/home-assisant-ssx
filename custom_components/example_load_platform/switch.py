@@ -61,7 +61,7 @@ class N2ScreenSwitch(SwitchEntity):
         """Turn the switch on."""
         _LOGGER.info(f'turn_on.self={kwargs}')
         # 杀死屏保进程
-        os.system("ssh ssx@node102 kill `ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}'|awk 'NR==1'`")
+        os.system("ssh ssx@node102 'kill `ps -ef | awk \"$0 ~ /xscreensaver -nosplash/ {print $2}\" | awk \"NR==1\"`' ")
         time.sleep(3)
         # 解锁屏幕
         os.system("ssh ssx@node102 xset -display :0.0 dpms force on")
@@ -78,7 +78,7 @@ class N2ScreenSwitch(SwitchEntity):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
         # 杀死屏保进程
-        os.system("ssh ssx@node102 kill `ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}'|awk 'NR==1'`")
+        os.system("ssh ssx@node102 'kill `ps -ef | awk \"$0 ~ /xscreensaver -nosplash/ {print $2}\" | awk \"NR==1\"`' ")
         time.sleep(3)
         # 锁定屏幕
         os.system("ssh ssx@node102 xset -display :0.0 dpms force off")
