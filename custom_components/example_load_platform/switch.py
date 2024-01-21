@@ -34,9 +34,9 @@ def setup_platform(
 
 def kill_xscreen():
     # 杀死屏保进程
-    kill_pid = os.popen("ssh ssx@node102 ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}' | awk 'NR==1' ")
+    kill_pid = os.popen("ssh ssx@node102 ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}' | awk 'NR==1' ").read()
     _LOGGER.info(f'获取的xsc命令进程id={kill_pid}')
-    kill_result = os.popen(f"ssh ssx@node102 kill {kill_pid}")
+    kill_result = os.popen(f"ssh ssx@node102 kill {kill_pid}").read()
     _LOGGER.info(f'获取的xsc命令进程结果={kill_result}')
 
 
