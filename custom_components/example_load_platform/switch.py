@@ -73,7 +73,7 @@ class N2ScreenSwitch(SwitchEntity):
         kill_xscreen()
         time.sleep(3)
         # 解锁屏幕
-        os.system("ssh ssx@node102 xset -display :0.0 dpms force on &")
+        os.system("ssh ssx@node102 'xset -display :0.0 dpms force on'")
         time.sleep(3)
         # 启动屏保
         os.system("ssh ssx@node102 xscreensaver -nosplash &")
@@ -91,7 +91,7 @@ class N2ScreenSwitch(SwitchEntity):
         kill_xscreen()
         time.sleep(3)
         # 锁定屏幕
-        r = os.popen("ssh ssx@node102 xset -display :0.0 dpms force off & sleep 2").read()
+        r = os.system("ssh ssx@node102 'xset -display :0.0 dpms force off'")
         _LOGGER.info(f"关闭显示器结果={r}")
         time.sleep(3)
         self._is_on = False
