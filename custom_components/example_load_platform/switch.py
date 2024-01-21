@@ -68,8 +68,6 @@ class N2ScreenSwitch(SwitchEntity):
     def turn_on(self, **kwargs):
         """Turn the switch on."""
         _LOGGER.info(f'turn_on.self={kwargs}')
-        if self._is_on:
-            return
 
         # 杀死屏保进程
         kill_xscreen()
@@ -88,8 +86,7 @@ class N2ScreenSwitch(SwitchEntity):
     def turn_off(self, **kwargs):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
-        if not self._is_on:
-            return
+
         # 杀死屏保进程
         kill_xscreen()
         time.sleep(3)
