@@ -36,7 +36,8 @@ def kill_xscreen():
     # 杀死屏保进程
     kill_pid = os.system("ssh ssx@node102 ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}' | awk 'NR==1' ")
     _LOGGER.info(f'获取的xsc命令进程id={kill_pid}')
-    os.system(f"ssh ssx@node102 kill {kill_pid}")
+    kill_result = os.system(f"ssh ssx@node102 kill {kill_pid}")
+    _LOGGER.info(f'获取的xsc命令进程结果={kill_result}')
 
 
 class N2ScreenSwitch(SwitchEntity):
