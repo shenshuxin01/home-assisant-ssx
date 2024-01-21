@@ -83,6 +83,7 @@ class N2ScreenSwitch(SwitchEntity):
         time.sleep(2)
         self._is_on = True
 
+    # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
