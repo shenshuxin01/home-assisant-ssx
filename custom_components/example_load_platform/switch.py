@@ -14,16 +14,16 @@ from . import DOMAIN
 import logging
 import datetime
 
-
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = datetime.timedelta(seconds=120)
 
+
 def setup_platform(
-    hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None
+        hass: HomeAssistant,
+        config: ConfigType,
+        add_entities: AddEntitiesCallback,
+        discovery_info: DiscoveryInfoType | None = None
 ) -> None:
     """Set up the switch platform."""
     # We only want this platform to be set up via discovery.
@@ -32,14 +32,21 @@ def setup_platform(
     add_entities([N2ScreenSwitch()])
 
 
+def kill_xscreen():
+    # 杀死屏保进程
+    kill_pid = os.system("ssh ssx@node102 ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}' | awk 'NR==1' ")
+    _LOGGER.info(f'获取的xsc命令进程id={kill_pid}')
+    os.system(f"ssh ssx@node102 kill {kill_pid}")
+
+
 class N2ScreenSwitch(SwitchEntity):
     _attr_has_entity_name = True
 
     def __init__(self):
-#         _LOGGER.info(f'turn_on.kwargs={kwargs}')
+        #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init N2ScreenSwitch start!')
         self._is_on = True
-        self._attr_device_info ="N2ScreenSwitch_attr_device_info"  # For automatic device registration
+        self._attr_device_info = "N2ScreenSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "N2ScreenSwitch_attr_unique_id"
 
     @property
@@ -60,8 +67,11 @@ class N2ScreenSwitch(SwitchEntity):
     def turn_on(self, **kwargs):
         """Turn the switch on."""
         _LOGGER.info(f'turn_on.self={kwargs}')
+        if self._is_on:
+            return
+
         # 杀死屏保进程
-        os.system("ssh ssx@node102 'kill `ps -ef | awk \"$0 ~ /xscreensaver -nosplash/ {print $2}\" | awk \"NR==1\"`' ")
+        kill_xscreen()
         time.sleep(3)
         # 解锁屏幕
         os.system("ssh ssx@node102 xset -display :0.0 dpms force on")
@@ -77,8 +87,10 @@ class N2ScreenSwitch(SwitchEntity):
     def turn_off(self, **kwargs):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
+        if not self._is_on:
+            return
         # 杀死屏保进程
-        os.system("ssh ssx@node102 'kill `ps -ef | awk \"$0 ~ /xscreensaver -nosplash/ {print $2}\" | awk \"NR==1\"`' ")
+        kill_xscreen()
         time.sleep(3)
         # 锁定屏幕
         os.system("ssh ssx@node102 xset -display :0.0 dpms force off")
