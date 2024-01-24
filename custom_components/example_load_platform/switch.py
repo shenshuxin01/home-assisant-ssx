@@ -92,7 +92,7 @@ class N2ScreenSwitch(SwitchEntity):
         kill_xscreen()
         time.sleep(2)
         # 锁定屏幕
-        for i in range(10):
+        for i in range(40):
             r = os.system("ssh ssx@node102 'xset -display :0.0 dpms force off'")
             _LOGGER.info(f"关闭显示器结果={r}")
             time.sleep(2)
