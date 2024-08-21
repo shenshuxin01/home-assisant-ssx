@@ -61,10 +61,10 @@ logger:
     custom_components.hass_cozylife_local_pull: warn
 
 # 配置nginx代理
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 192.168.0.109
+#http:
+#  use_x_forwarded_for: true
+#  trusted_proxies:
+#    - 192.168.0.109
 
 #当您从这些网络之一登录时，系统会询问您使用哪个用户帐户，并且不需要输入密码。如果开启此项，那么非下面的ip就不能访问啦，其他的验证方式也都失效
 #homeassistant:
