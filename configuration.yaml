@@ -11,7 +11,7 @@ api:
 
 # Text to speech
 tts:
-  - platform: edge_tts
+  - platform: edge_tts # git@github.com:hasscc/hass-edge-tts.git
     service_name: xiaomo_say # service: tts.xiaomo_say
     language: zh-CN-XiaoxiaoNeural
     volume: +10%
@@ -26,32 +26,6 @@ hass_cozylife_local_pull:
 
 #自定义ssx插件
 example_load_platform:
-
-# Example configuration.yaml entry
-#alarm_control_panel:
-#  - platform: template
-#    panels:
-#      safe_alarm_panel:
-#        value_template: "{{ states('alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique') }}"
-##        value_template: "{{ state_attr('alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique','ssx_diy') }}"
-#        arm_away:
-#          service: alarm_control_panel.alarm_arm_away
-#          target:
-#            entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
-#          data:
-#            code: !secret alarm_code
-#        arm_home:
-#          service: alarm_control_panel.alarm_arm_home
-#          target:
-#            entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
-#          data:
-#            code: !secret alarm_code
-#        disarm:
-#          - service: alarm_control_panel.alarm_disarm
-#            target:
-#              entity_id: alarm_control_panel.example_load_platform_Node12AlarmControlPanelDeviceUnique
-#            data:
-#              code: !secret alarm_code
 
 # Example configuration.yaml entry
 logger:
