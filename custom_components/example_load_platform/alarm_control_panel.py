@@ -69,12 +69,16 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_unique_id = "Node12AlarmControlPanelDeviceUnique"
 
     @property
+    def name(self) -> str:
+        """Return the name of the sensor."""
+        return '巩华家园监控面板'
+
+    @property
     def extra_state_attributes(self):
         """Return the state attributes."""
         _LOGGER.debug(f'extra_state_attributes Run')
         attributes = {
-            'ssx_diy': f'myssx_{random.randint(1, 10)}',
-            'friendly_name': f'gh监控面板'
+            'ssx_diy': f'myssx_{random.randint(1, 10)}'
         }
         return attributes
 
@@ -84,22 +88,25 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_state = 'disarming'
         time.sleep(1)
         self._attr_state = 'disarmed'
+        ssx_utils.play_text_xiaoai('alarm_disarm')
 
     def alarm_arm_home(self, code=None) -> None:
         """Send arm home command."""
         _LOGGER.info(f'alarm_arm_home Run,codeInfo:{code}')
         self._attr_state = 'armed_home'
-
+        ssx_utils.play_text_xiaoai('alarm_arm_home')
 
     def alarm_arm_away(self, code=None) -> None:
         """Send arm away command."""
         _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
         self._attr_state = 'armed_away'
+        ssx_utils.play_text_xiaoai('alarm_arm_away')
 
     def alarm_arm_night(self, code=None) -> None:
         """Send arm night command."""
         _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
         self._attr_state = 'armed_night'
+        ssx_utils.play_text_xiaoai('alarm_arm_night')
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
@@ -126,14 +133,14 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         if 'disarmed'.__eq__(self._attr_state):
             return
 
-        info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
-        _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
-        if float(info.cpu) > 500:
-            _LOGGER.error(f'CPU异常:{info.cpuDesc}')
-            self._attr_state = 'pending'
-            self.alarm_trigger(None)
-        elif float(info.mem) > 80:
-            _LOGGER.error(f'MEM异常:{info.memDesc}')
-            self._attr_state = 'pending'
-            self.alarm_trigger(None)
+        # info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
+        # _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
+        # if float(info.cpu) > 500:
+        #     _LOGGER.error(f'CPU异常:{info.cpuDesc}')
+        #     self._attr_state = 'pending'
+        #     self.alarm_trigger(None)
+        # elif float(info.mem) > 80:
+        #     _LOGGER.error(f'MEM异常:{info.memDesc}')
+        #     self._attr_state = 'pending'
+        #     self.alarm_trigger(None)
 
