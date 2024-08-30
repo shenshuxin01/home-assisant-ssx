@@ -53,10 +53,11 @@ def getNode12CpuMemInfo() -> DellR410Node12CpuMemInfo:
     return d2
 
 
-def play_text_xiaoai(text: str) -> None:
+def play_text_homepod(text: str) -> None:
+    text = text.encode("unicode_escape").decode("utf-8")
     resp = requests.post(
         "http://node109:8123/api/services/tts/xiaomo_say",
-        data='{"entity_id": "media_player.xiao_ai_yin_xiang_3783","message": "' + text + '","cache": true}',
+        data='{"entity_id": "media_player.ke_ting","message": "' + text + '","cache": true}',
         headers= {'Content-Type': 'application/json;charset=UTF-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIzZjUyOWUwMjNmOWQ0M2UxOTVkYTIyZWY2MmNkZmQ0MyIsImlhdCI6MTcyNDc0MTcyOSwiZXhwIjoyMDQwMTAxNzI5fQ.5KFgbSC71-Cn8lJkejmhfiDdOTZQ2PInM6k8aJYK_p8'}
     )
     if resp.status_code != 200:
@@ -67,4 +68,4 @@ def play_text_xiaoai(text: str) -> None:
 
 
 if __name__ == '__main__':
-     play_text_xiaoai('nihao')
+     play_text_homepod('nihao')
