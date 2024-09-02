@@ -5,7 +5,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
-DOMAIN = 'example_load_platform'
+DOMAIN = 'ha_ssx'
 
 
 def setup(hass: HomeAssistant, config: ConfigType) -> bool:
