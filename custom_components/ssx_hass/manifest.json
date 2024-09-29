@@ -1,6 +1,6 @@
 {
-  "domain": "example_load_platform",
-  "name": "Example Load Platform",
+  "domain": "ssx_hass",
+  "name": "ssx Platform",
   "codeowners": [],
   "dependencies": [],
   "documentation": "https://github.com/home-assistant/example-custom-config/tree/master/custom_components/example_load_platform/",

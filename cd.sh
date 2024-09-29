@@ -1,7 +1,8 @@
-nd1_hass=/home/app/apps/k8s/for_docker_volume/homeassistant/config
+remote_ha=/root/docker-volume/hass/config
+remote_user=root@192.168.0.102
 
-scp configuration.yaml secrets.yaml  root@node109:${nd1_hass} \
-  && ssh root@node109 "rm -rf ${nd1_hass}/custom_components/example_load_platform" \
-  && scp -r ./custom_components/example_load_platform  root@node109:${nd1_hass}/custom_components \
-  && ssh root@node109 "kubectl delete pod -n ssx \`kubectl get pod -n ssx | grep homeassistant | awk '{print \$1}'\`"
+scp configuration.yaml start.sh ${remote_user}:${remote_ha} \
+  && ssh ${remote_user} "rm -rf ${remote_ha}/custom_components/{edge_tts,hass_cozylife_local_pull,ssx_hass}" \
+  && scp -r custom_components/*  ${remote_user}:${remote_ha}/custom_components \
+  && ssh ${remote_user} "bash ${remote_ha}/start.sh"
 

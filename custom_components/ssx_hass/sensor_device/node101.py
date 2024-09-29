@@ -7,7 +7,7 @@ from homeassistant.const import TEMP_CELSIUS
 
 import logging
 
-from custom_components.example_load_platform import ssx_utils
+from custom_components.ssx_hass import ssx_utils
 
 _LOGGER = logging.getLogger(__name__)
 DellR410Info = ssx_utils.DellR410Info()

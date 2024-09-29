@@ -17,29 +17,25 @@ tts:
     volume: +10%
 
 
-automation: !include automations.yaml
-script: !include scripts.yaml
-scene: !include scenes.yaml
-
-#拼多多购买的cozylife灯泡和插座
+#拼多多购买的cozylife灯泡和插座 git@github.com:shenshuxin01/hass_cozylife_local_pull.git
 hass_cozylife_local_pull:
 
 #自定义ssx插件
-example_load_platform:
+#ssx_hass:
 
 # Example configuration.yaml entry
 logger:
   default: error
   logs:
-    custom_components.example_load_platform: info
-    custom_components.hass_cozylife_local_pull: warn
+#    custom_components.ssx_hass: info
+    custom_components.hass_cozylife_local_pull: info
 
 #2024-08-23 22:56:10.207 ERROR (MainThread) [homeassistant.components.http.forwarded] Received X-Forwarded-For header from an untrusted proxy 10.234.68.166
 # 配置nginx代理
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 10.234.68.166
+    - 192.168.0.0/24
 
 homeassistant:
   media_dirs:
