@@ -9,4 +9,4 @@ docker run -d \
   -e TZ=Asia/Shanghai \
   -v /root/docker-volume/hass/config:/config \
   -v /run/dbus:/run/dbus:ro \
-  --network=host swr.cn-north-4.myhuaweicloud.com/ddn-k8s/ghcr.io/home-assistant/home-assistant:stable
+  --network=host registry.cn-hangzhou.aliyuncs.com/ssx-pub/home-assistant:2024.6.4-amd
