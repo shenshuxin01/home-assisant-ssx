@@ -51,4 +51,6 @@ command_line:
   - switch:
       command_on: echo -e 'run_2_9' | nc 192.168.0.106 80
       command_off: echo -e 'run_4_9' | nc 192.168.0.106 80
-      name: "窗户widows"
+      name: "窗户"
+      assumed_state: on
+      unique_id: ssx_switch_chuanghu01_uid
