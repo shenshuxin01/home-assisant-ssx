@@ -47,11 +47,8 @@ homeassistant:
 
 
 # 控制开窗电机
-switch:
-  - platform: command_line
-    switches:
-      power_control:
-        command_on: echo -e 'run_2_9' | nc 192.168.0.106 80
-        command_off: echo -e 'run_4_9' | nc 192.168.0.106 80
-        friendly_name: "窗户widows"
-
+command_line:
+  - switch:
+      command_on: echo -e 'run_2_9' | nc 192.168.0.106 80
+      command_off: echo -e 'run_4_9' | nc 192.168.0.106 80
+      name: "窗户widows"
