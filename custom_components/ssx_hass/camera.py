@@ -64,7 +64,7 @@ class EzvizCamera(Camera):
         self, width: int | None = None, height: int | None = None
     ) -> bytes | None:
         """Return bytes of camera image."""
-        with open('/config/ezviz.webp', "rb") as file:
+        with open('/config/custom_components/ssx_hass/staticfile/ezviz.jpg', "rb") as file:
             return file.read()
 
     async def stream_source(self) -> str | None:
