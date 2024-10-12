@@ -1,3 +1,4 @@
+# run with node102
 # cat /config/configuration.yaml
 # Loads default set of integrations. Do not remove.
 default_config:
@@ -21,14 +22,17 @@ tts:
 hass_cozylife_local_pull:
 
 #自定义ssx插件
-#ssx_hass:
+ssx_hass:
+
+#小米米家
+xiaomi_miot:
 
 # Example configuration.yaml entry
 logger:
   default: error
   logs:
-#    custom_components.ssx_hass: info
-    custom_components.hass_cozylife_local_pull: info
+    custom_components.ssx_hass: warn
+    custom_components.hass_cozylife_local_pull: warn
 
 #2024-08-23 22:56:10.207 ERROR (MainThread) [homeassistant.components.http.forwarded] Received X-Forwarded-For header from an untrusted proxy 10.234.68.166
 # 配置nginx代理
@@ -40,3 +44,14 @@ http:
 homeassistant:
   media_dirs:
     media: /media
+
+
+# 控制开窗电机
+switch:
+  - platform: command_line
+    switches:
+      power_control:
+        command_on: echo -e 'run_2_9' | nc 192.168.0.106 80
+        command_off: echo -e 'run_4_9' | nc 192.168.0.106 80
+        friendly_name: "窗户widows"
+
