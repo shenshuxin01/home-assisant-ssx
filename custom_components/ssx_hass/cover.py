@@ -129,6 +129,8 @@ class Window1(CoverEntity):
         self.check_window()
         self.running_p = -9
         exec_cmd(False, 9)
+        time.sleep(1)
+        exec_cmd(False, 2)
         self._attr_current_cover_position = 0
         self.running_p = 0
 
