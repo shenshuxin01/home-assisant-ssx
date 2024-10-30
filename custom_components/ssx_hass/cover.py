@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime
 import os
+import subprocess
 import time
 
 from homeassistant.components.cover import CoverEntity, CoverEntityFeature, CoverDeviceClass, ATTR_POSITION
@@ -46,10 +47,17 @@ def cal_position(p) -> str:
 
 # True开窗
 # 转多少秒
-def exec_cmd(direction_flag: bool, seconds) -> str:
+def exec_cmd(direction_flag: bool, seconds) -> int:
     direction = 2 if direction_flag else 4
-    result = os.popen(f"echo -e 'run_{direction}_{seconds}' | nc 192.168.0.106 80").readlines()[0]
-    logging.info("exec window %s", result)
+    cmd = f"echo -e 'run_{direction}_{seconds}' | nc 192.168.0.106 80"
+    _LOGGER.info(f"Executing command: {cmd}")
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    try:
+        p.wait(timeout=seconds+1)
+    except subprocess.TimeoutExpired:
+        p.kill()
+    result = p.returncode
+    _LOGGER.info("exec window %s", result)
     return result
 
 
@@ -84,7 +92,7 @@ class Window1(CoverEntity):
         return CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.SET_POSITION | CoverEntityFeature.STOP
 
     def update(self) -> None:
-        logging.info("update called")
+        _LOGGER.info("update called,current_cover_position %s,running_p %s", self._attr_current_cover_position, self.running_p)
         if (self._attr_current_cover_position is None) or (self._attr_current_cover_position == 0):
             self._attr_is_closed = True
             self._attr_is_closing = False
@@ -145,7 +153,7 @@ class Window1(CoverEntity):
             return
         self.check_window()
         req_p = min(max(int(kwargs.get(ATTR_POSITION)), 0), 100)
-        logging.info("Setting position to %s", req_p)
+        _LOGGER.info("Setting position to %s", req_p)
         position: str = cal_position(req_p)
         if position == "00":
             self.close_cover()
@@ -156,6 +164,7 @@ class Window1(CoverEntity):
         targe_first = int(position[0])
         current_first = int(cal_position(self._attr_current_cover_position)[0])
         self.running_p = targe_first - current_first
+        _LOGGER.info("set_cover_position calculate running_p: %s", self.running_p)
         for i in range(1, 10):
             if self.running_p == 0:
                 self._attr_current_cover_position = req_p
