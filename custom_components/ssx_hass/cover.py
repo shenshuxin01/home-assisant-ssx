@@ -85,7 +85,7 @@ class Window1(CoverEntity):
 
     def update(self) -> None:
         logging.info("update called")
-        if (self._attr_current_cover_position is None) or self._attr_current_cover_position == 0:
+        if (self._attr_current_cover_position is None) or (self._attr_current_cover_position == 0):
             self._attr_is_closed = True
             self._attr_is_closing = False
             self._attr_is_opening = False
@@ -95,6 +95,7 @@ class Window1(CoverEntity):
             self._attr_is_opening = False
         else:
             self._attr_is_closed = False
+
         if self.running_p == 0:
             self._attr_is_closing = False
             self._attr_is_opening = False
@@ -106,7 +107,9 @@ class Window1(CoverEntity):
             self._attr_is_opening = False
 
     def check_window(self) -> None:
-        if self._attr_current_cover_position is None:
+        if self.running_p != 0:
+            return
+        elif self._attr_current_cover_position is None:
             self.running_p = -9
             exec_cmd(False, 9)
             time.sleep(1)
@@ -116,48 +119,46 @@ class Window1(CoverEntity):
 
     def open_cover(self, **kwargs):
         """Open the cover."""
+        if self.running_p != 0:
+            return
         self.check_window()
         self.running_p = 9
         exec_cmd(True, 9)
-        time.sleep(1)
-        exec_cmd(True, 2)
         self._attr_current_cover_position = 100
         self.running_p = 0
 
     def close_cover(self, **kwargs):
         """Close cover."""
+        if self.running_p != 0:
+            return
         self.check_window()
         self.running_p = -9
         exec_cmd(False, 9)
         time.sleep(1)
-        exec_cmd(False, 2)
+        exec_cmd(False, 2)  # 关紧
         self._attr_current_cover_position = 0
         self.running_p = 0
 
     def set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
+        if self.running_p != 0:
+            return
         self.check_window()
-        logging.info("Setting position to %s", kwargs.get(ATTR_POSITION))
-        position: str = cal_position(kwargs.get(ATTR_POSITION))
+        req_p = min(max(int(kwargs.get(ATTR_POSITION)), 0), 100)
+        logging.info("Setting position to %s", req_p)
+        position: str = cal_position(req_p)
         if position == "00":
             self.close_cover()
             return
         if position == "99":
             self.open_cover()
             return
-        if self.running_p != 0:
-            for i in range(1, 10):
-                time.sleep(1)
-                if self.running_p == 0:
-                    self.set_cover_position(position=kwargs.get(ATTR_POSITION))
-                    break
-            return
         targe_first = int(position[0])
         current_first = int(cal_position(self._attr_current_cover_position)[0])
         self.running_p = targe_first - current_first
         for i in range(1, 10):
             if self.running_p == 0:
-                self._attr_current_cover_position = kwargs.get(ATTR_POSITION)
+                self._attr_current_cover_position = req_p
                 return
             if self.running_p > 0:
                 # 开窗1秒
@@ -170,8 +171,8 @@ class Window1(CoverEntity):
                 exec_cmd(False, 1)
                 self.running_p += 1
         self.running_p = 0
-        self._attr_current_cover_position = kwargs.get(ATTR_POSITION)
+        self._attr_current_cover_position = req_p
 
     def stop_cover(self, **kwargs):
         """Stop the cover."""
-        self.running_p = 0
+        # self.running_p = 0
