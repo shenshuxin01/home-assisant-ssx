@@ -32,12 +32,10 @@ def setup_platform(
     add_entities([N2ScreenSwitch()])
 
 
-def kill_xscreen():
-    # 杀死屏保进程
-    kill_pid = os.popen("ssh ssx@node102 ps -ef | awk '$0 ~ /xscreensaver -nosplash/ {print $2}' | awk 'NR==1' ").read()
-    _LOGGER.info(f'获取的xsc命令进程id={kill_pid}')
-    kill_result = os.popen(f"ssh ssx@node102 kill {kill_pid}").read()
-    _LOGGER.info(f'获取的xsc命令进程结果={kill_result}')
+def lock_sessions(lock_sessions: bool = True):
+    lock = "" if lock_sessions else "un"
+    # 锁定会话，解锁会话
+    os.system(f"sudo loginctl {lock}lock-sessions")
 
 
 class N2ScreenSwitch(SwitchEntity):
@@ -69,18 +67,12 @@ class N2ScreenSwitch(SwitchEntity):
         """Turn the switch on."""
         _LOGGER.info(f'turn_on.self={kwargs}')
 
-        # 杀死屏保进程
-        kill_xscreen()
-        time.sleep(2)
-        # 解锁屏幕
-        os.system("ssh ssx@node102 'xset -display :0.0 dpms force on'")
-        time.sleep(2)
-        # 启动屏保
-        os.system("ssh ssx@node102 xscreensaver -nosplash &")
-        time.sleep(2)
+        # 解锁会话
+        lock_sessions(False)
+        time.sleep(1)
         # 显示屏保
-        os.system("ssh ssx@node102 xscreensaver-command -lock")
-        time.sleep(2)
+        os.system("kill -9 `ps -ef | grep gluqlo | awk '{print $2}'`")
+        os.system("nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &")
         self._is_on = True
 
     # 提前设置锁屏超时时间：永不
@@ -88,12 +80,9 @@ class N2ScreenSwitch(SwitchEntity):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
 
-        # 杀死屏保进程
-        kill_xscreen()
-        time.sleep(2)
-        # 锁定屏幕
-        for i in range(40):
-            r = os.system("ssh ssx@node102 'xset -display :0.0 dpms force off'")
-            _LOGGER.info(f"关闭显示器结果={r}")
-            time.sleep(2)
-        self._is_on = False
+        # 锁定会话
+        lock_sessions()
+        time.sleep(1)
+        # 结束屏保
+        os.system("kill -9 `ps -ef | grep gluqlo | awk '{print $2}'`")
+
