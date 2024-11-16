@@ -85,4 +85,5 @@ class N2ScreenSwitch(SwitchEntity):
         time.sleep(1)
         # 结束屏保
         os.system("kill -9 `ps -ef | grep gluqlo | awk '{print $2}'`")
+        self._is_on = False
 
