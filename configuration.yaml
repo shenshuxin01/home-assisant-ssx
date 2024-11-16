@@ -31,7 +31,7 @@ xiaomi_miot:
 logger:
   default: error
   logs:
-    custom_components.ssx_hass: warn
+    custom_components.ssx_hass: info
     custom_components.hass_cozylife_local_pull: warn
 
 #2024-08-23 22:56:10.207 ERROR (MainThread) [homeassistant.components.http.forwarded] Received X-Forwarded-For header from an untrusted proxy 10.234.68.166
