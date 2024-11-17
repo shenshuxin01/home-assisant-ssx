@@ -1,8 +1,10 @@
 import logging
+import subprocess
 
 import requests
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class DellR410Info:
     temperature = None
@@ -58,14 +60,43 @@ def play_text_homepod(text: str) -> None:
     resp = requests.post(
         "http://node109:8123/api/services/tts/xiaomo_say",
         data='{"entity_id": "media_player.ke_ting","message": "' + text + '","cache": true}',
-        headers= {'Content-Type': 'application/json;charset=UTF-8','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIzZjUyOWUwMjNmOWQ0M2UxOTVkYTIyZWY2MmNkZmQ0MyIsImlhdCI6MTcyNDc0MTcyOSwiZXhwIjoyMDQwMTAxNzI5fQ.5KFgbSC71-Cn8lJkejmhfiDdOTZQ2PInM6k8aJYK_p8'}
+        headers={'Content-Type': 'application/json;charset=UTF-8',
+                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIzZjUyOWUwMjNmOWQ0M2UxOTVkYTIyZWY2MmNkZmQ0MyIsImlhdCI6MTcyNDc0MTcyOSwiZXhwIjoyMDQwMTAxNzI5fQ.5KFgbSC71-Cn8lJkejmhfiDdOTZQ2PInM6k8aJYK_p8'}
     )
     if resp.status_code != 200:
-        _LOGGER.error('error'+resp.reason)
+        _LOGGER.error('error' + resp.reason)
         return
     respJson = resp.json()
     _LOGGER.debug(respJson)
 
 
+def exec_cmd_ret_code(cmd: str, timeout_seconds: int = 1) -> int:
+    _LOGGER.info(f"Executing command: {cmd}")
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    try:
+        p.wait(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        p.kill()
+    result = p.returncode
+    _LOGGER.info("exec window %s", result)
+    return result
+
+
+def exec_cmd_ret_out(cmd: str, timeout_seconds: int = 1) -> str:
+    _LOGGER.info(f"Executing command: {cmd}")
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    try:
+        p.wait(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        p.kill()
+    if p.returncode != 0:
+        _LOGGER.error("exec window %s", p.returncode)
+        return ""
+    result = p.stdout.readlines()
+    s = "\n".join(result)
+    _LOGGER.info("exec window %s", s)
+    return s
+
+
 if __name__ == '__main__':
-     play_text_homepod('nihao')
+    play_text_homepod('nihao')

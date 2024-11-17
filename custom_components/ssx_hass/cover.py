@@ -14,6 +14,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 import logging
 
 from . import DOMAIN
+from .ssx_utils import exec_cmd_ret_code
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,12 +52,7 @@ def exec_cmd(direction_flag: bool, seconds) -> int:
     direction = 2 if direction_flag else 4
     cmd = f"echo -e 'run_{direction}_{seconds}' | nc 192.168.0.106 80"
     _LOGGER.info(f"Executing command: {cmd}")
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    try:
-        p.wait(timeout=seconds+1)
-    except subprocess.TimeoutExpired:
-        p.kill()
-    result = p.returncode
+    result = exec_cmd_ret_code(cmd, seconds + 1)
     _LOGGER.info("exec window %s", result)
     return result
 
@@ -92,7 +88,8 @@ class Window1(CoverEntity):
         return CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.SET_POSITION | CoverEntityFeature.STOP
 
     def update(self) -> None:
-        _LOGGER.info("update called,current_cover_position %s,running_p %s", self._attr_current_cover_position, self.running_p)
+        _LOGGER.info("update called,current_cover_position %s,running_p %s", self._attr_current_cover_position,
+                     self.running_p)
         if (self._attr_current_cover_position is None) or (self._attr_current_cover_position == 0):
             self._attr_is_closed = True
             self._attr_is_closing = False

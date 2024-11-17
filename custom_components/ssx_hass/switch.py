@@ -14,6 +14,8 @@ from . import DOMAIN
 import logging
 import datetime
 
+from .ssx_utils import exec_cmd_ret_out
+
 _LOGGER = logging.getLogger(__name__)
 
 SCAN_INTERVAL = datetime.timedelta(seconds=120)
@@ -35,7 +37,12 @@ def setup_platform(
 def lock_sessions(lock_sessions: bool = True):
     lock = "" if lock_sessions else "un"
     # 锁定会话，解锁会话
-    os.system(f"sudo loginctl {lock}lock-sessions")
+    os.system(f"ssh root@node102 'loginctl {lock}lock-sessions'")
+
+
+def kill_time_background():
+    pid = exec_cmd_ret_out("ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'")
+    exec_cmd_ret_out(f"ssh root@node102 kill -9 {pid}")
 
 
 class N2ScreenSwitch(SwitchEntity):
@@ -57,6 +64,10 @@ class N2ScreenSwitch(SwitchEntity):
         }
         return attributes
 
+    def update(self) -> None:
+        _LOGGER.info('update N2ScreenSwitch start! %s', self._is_on)
+        self._is_on = len(exec_cmd_ret_out("ssh root@node102 ps -ef | grep gluqlo")) > 1
+
     @property
     def is_on(self):
         """If the switch is currently on or off."""
@@ -71,19 +82,15 @@ class N2ScreenSwitch(SwitchEntity):
         lock_sessions(False)
         time.sleep(1)
         # 显示屏保
-        os.system("kill -9 `ps -ef | grep gluqlo | awk '{print $2}'`")
-        os.system("nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &")
-        self._is_on = True
+        kill_time_background()
+        os.system("ssh root@node102 'nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &'")
 
     # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
-
-        # 锁定会话
-        lock_sessions()
-        time.sleep(1)
         # 结束屏保
-        os.system("kill -9 `ps -ef | grep gluqlo | awk '{print $2}'`")
-        self._is_on = False
-
+        kill_time_background()
+        # 锁定会话
+        time.sleep(1)
+        lock_sessions()
