@@ -51,7 +51,7 @@ class N2ScreenSwitch(SwitchEntity):
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init N2ScreenSwitch start!')
-        self._is_on = True
+        self._is_on: bool
         self._attr_device_info = "N2ScreenSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "N2ScreenSwitch_attr_unique_id"
 
@@ -66,7 +66,8 @@ class N2ScreenSwitch(SwitchEntity):
 
     def update(self) -> None:
         _LOGGER.info('update N2ScreenSwitch start! %s', self._is_on)
-        self._is_on = len(exec_cmd_ret_out("ssh root@node102 ps -ef | grep gluqlo")) > 1
+        # /home/ssx/apps/gluqlo/gluqlo过滤有用！
+        self._is_on = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find("/home/ssx/apps/gluqlo/gluqlo") > 0
 
     @property
     def is_on(self):
@@ -83,7 +84,7 @@ class N2ScreenSwitch(SwitchEntity):
         time.sleep(1)
         # 显示屏保
         kill_time_background()
-        os.system("ssh root@node102 'nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &'")
+        os.system("export DISPLAY=:0.0 & ssh root@node102 'nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &'")
 
     # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):

@@ -90,12 +90,13 @@ def exec_cmd_ret_out(cmd: str, timeout_seconds: int = 1) -> str:
     except subprocess.TimeoutExpired:
         p.kill()
     if p.returncode != 0:
-        _LOGGER.error("exec window %s", p.returncode)
+        _LOGGER.error("error exec cmd %s", p.returncode)
         return ""
-    result = p.stdout.readlines()
-    s = "\n".join(result)
-    _LOGGER.info("exec window %s", s)
-    return s
+    result = ""
+    for line in p.stdout.readlines():
+        result += line.decode("utf-8")
+    _LOGGER.info("success exec cmd result: %s", result)
+    return result
 
 
 if __name__ == '__main__':
