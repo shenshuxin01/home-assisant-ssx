@@ -14,7 +14,7 @@ from . import DOMAIN
 import logging
 import datetime
 
-from .ssx_utils import exec_cmd_ret_out
+from .ssx_utils import exec_cmd_ret_out, exec_cmd_ret_code
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,8 +41,7 @@ def lock_sessions(lock_sessions: bool = True):
 
 
 def kill_time_background():
-    pid = exec_cmd_ret_out("ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'")
-    exec_cmd_ret_out(f"ssh root@node102 kill -9 {pid}")
+    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
 
 
 class N2ScreenSwitch(SwitchEntity):
@@ -83,8 +82,12 @@ class N2ScreenSwitch(SwitchEntity):
         lock_sessions(False)
         time.sleep(6)
         # 显示屏保
-        kill_time_background()
-        os.system("ssh ssx@node102 'export DISPLAY=:0.0 & nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &'")
+        if not self._is_on:
+            # root@node102:~# cat lock_background.sh
+            # #!/bin/bash
+            # export DISPLAY=:0.0
+            # /home/ssx/apps/gluqlo/gluqlo -f -s 1.4
+            os.system("ssh root@node102 '~/lock_background.sh'")
 
     # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):
