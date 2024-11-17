@@ -81,10 +81,10 @@ class N2ScreenSwitch(SwitchEntity):
 
         # 解锁会话
         lock_sessions(False)
-        time.sleep(1)
+        time.sleep(6)
         # 显示屏保
         kill_time_background()
-        os.system("export DISPLAY=:0.0 & ssh root@node102 'nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &'")
+        os.system("ssh ssx@node102 'export DISPLAY=:0.0 & nohup /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 >/dev/null 2>&1 &'")
 
     # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):
@@ -93,5 +93,5 @@ class N2ScreenSwitch(SwitchEntity):
         # 结束屏保
         kill_time_background()
         # 锁定会话
-        time.sleep(1)
+        time.sleep(6)
         lock_sessions()
