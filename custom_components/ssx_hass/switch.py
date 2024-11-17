@@ -51,7 +51,7 @@ class N2ScreenSwitch(SwitchEntity):
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init N2ScreenSwitch start!')
-        self._is_on: bool
+        self._is_on: bool = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find("/home/ssx/apps/gluqlo/gluqlo") > 0
         self._attr_device_info = "N2ScreenSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "N2ScreenSwitch_attr_unique_id"
 
