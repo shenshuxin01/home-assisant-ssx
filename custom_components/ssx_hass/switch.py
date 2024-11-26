@@ -42,7 +42,13 @@ def lock_sessions(lock_sessions: bool = True):
 
 def kill_time_background():
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-
+    time.sleep(1)
+    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
+    time.sleep(1)
+    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
+    time.sleep(1)
+    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
+    time.sleep(1)
 
 class N2ScreenSwitch(SwitchEntity):
     _attr_has_entity_name = True
