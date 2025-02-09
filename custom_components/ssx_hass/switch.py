@@ -37,18 +37,11 @@ def setup_platform(
 def lock_sessions(lock_sessions: bool = True):
     lock = "" if lock_sessions else "un"
     # 锁定会话，解锁会话
-    os.system(f"ssh root@node102 'loginctl {lock}lock-sessions'")
+    os.system(f"ssh root@node102 'echo loginctl {lock}lock-sessions > /root/exec_cmd.sh'")
 
 
 def kill_time_background():
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-    time.sleep(1)
-    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-    time.sleep(1)
-    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-    time.sleep(1)
-    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-    time.sleep(1)
 
 class N2ScreenSwitch(SwitchEntity):
     _attr_has_entity_name = True
@@ -86,14 +79,15 @@ class N2ScreenSwitch(SwitchEntity):
 
         # 解锁会话
         lock_sessions(False)
-        time.sleep(6)
+        time.sleep(3)
         # 显示屏保
         if not self._is_on:
             # root@node102:~# cat lock_background.sh
             # #!/bin/bash
             # export DISPLAY=:0.0
             # /home/ssx/apps/gluqlo/gluqlo -f -s 1.4
-            os.system("ssh root@node102 '~/lock_background.sh'")
+            # os.system("ssh root@node102 '~/lock_background.sh'")
+            os.system(f"ssh root@node102 'echo /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 > /root/exec_cmd.sh'")
 
     # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):
