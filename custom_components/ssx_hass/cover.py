@@ -37,6 +37,9 @@ def setup_platform(
 #卧室窗户
 #       command_on: echo -e 'run_2_9' | nc 192.168.0.106 80
 #       command_off: echo -e 'run_4_9' | nc 192.168.0.106 80
+#mini家
+#       command_on: echo -e 'open_mini_light_GHJY_6_2_902' | nc 192.168.0.104 80
+#       command_off: echo -e 'close_mini_light_GHJY_6_2_902' | nc 192.168.0.104 80
 # return 1-9
 def cal_position(p) -> str:
     position = int(p)

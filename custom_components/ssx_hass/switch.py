@@ -31,7 +31,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([N2ScreenSwitch()])
+    add_entities([N2ScreenSwitch(),MiniLightSwitch()])
 
 
 def lock_sessions(lock_sessions: bool = True):
@@ -100,3 +100,50 @@ class N2ScreenSwitch(SwitchEntity):
         # 锁定会话
         time.sleep(6)
         lock_sessions()
+
+class MiniLightSwitch(SwitchEntity):
+    _attr_has_entity_name = True
+
+    def __init__(self):
+        #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
+        _LOGGER.info('init MiniLightSwitch start!')
+        self._is_on: bool = True
+        self._attr_device_info = "MiniLightSwitch_attr_device_info"  # For automatic device registration
+        self._attr_unique_id = "MiniLightSwitch_attr_unique_id"
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes."""
+        _LOGGER.debug(f'extra_state_attributes Run')
+        attributes = {
+            'friendly_name': f'小小灯'
+        }
+        return attributes
+
+    def update(self) -> None:
+        _LOGGER.info('update MiniLightSwitch start! %s', self._is_on)
+        # /home/ssx/apps/gluqlo/gluqlo过滤有用！
+
+
+    @property
+    def is_on(self):
+        """If the switch is currently on or off."""
+        _LOGGER.info('is_on.self------------')
+        return self._is_on
+
+    def turn_on(self, **kwargs):
+        """Turn the switch on."""
+        _LOGGER.info(f'turn_on.self={kwargs}')
+
+        result = exec_cmd_ret_code("echo -e open_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
+        _LOGGER.info("exec ret %s", result)
+        self._is_on = str(result) == "open mini_light fenish"
+
+    # 提前设置锁屏超时时间：永不
+    def turn_off(self, **kwargs):
+        """Turn the switch off."""
+        _LOGGER.info(f'turn_off.self={kwargs}')
+
+        result = exec_cmd_ret_code("echo -e close_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
+        _LOGGER.info("exec ret %s", result)
+        self._is_on = str(result) == "close mini_light fenish"
