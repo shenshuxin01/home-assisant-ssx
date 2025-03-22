@@ -146,4 +146,5 @@ class MiniLightSwitch(SwitchEntity):
 
         result = exec_cmd_ret_out("echo -e close_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
         _LOGGER.info("exec ret %s", result)
-        self._is_on = str(result) == "close mini_light fenish"
+        if str(result) == "close mini_light fenish":
+            self._is_on = False
