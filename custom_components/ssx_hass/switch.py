@@ -135,7 +135,7 @@ class MiniLightSwitch(SwitchEntity):
         """Turn the switch on."""
         _LOGGER.info(f'turn_on.self={kwargs}')
 
-        result = exec_cmd_ret_code("echo -e open_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
+        result = exec_cmd_ret_out("echo -e open_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
         _LOGGER.info("exec ret %s", result)
         self._is_on = str(result) == "open mini_light fenish"
 
@@ -144,6 +144,6 @@ class MiniLightSwitch(SwitchEntity):
         """Turn the switch off."""
         _LOGGER.info(f'turn_off.self={kwargs}')
 
-        result = exec_cmd_ret_code("echo -e close_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
+        result = exec_cmd_ret_out("echo -e close_mini_light_GHJY_6_2_902 | nc 192.168.0.104 81", 10)
         _LOGGER.info("exec ret %s", result)
         self._is_on = str(result) == "close mini_light fenish"

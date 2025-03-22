@@ -43,4 +43,4 @@ http:
 
 homeassistant:
   media_dirs:
-    media: /media
+    media: /config/media
