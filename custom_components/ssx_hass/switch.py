@@ -46,6 +46,34 @@ def kill_time_background():
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
 
 class N2ScreenSwitch(SwitchEntity):
+    """
+    部署步骤
+    1. node102重启
+    2. 输入密码打开主页面
+    3. 选择命令行终端
+    4. su root
+    5. ./init_loop.sh
+
+    参考
+    root@node102:~# cat init_loop.sh
+    #!/bin/bash
+
+    sudo chmod a+w /etc/resolv.conf
+    sudo echo 'nameserver 8.8.8.8' >> /etc/resolv.conf
+    sudo docker restart homeassistant
+    export DISPLAY=:0.0
+    echo -n > ~/exec_cmd.sh  # 清空内容
+
+    while true; do
+        # 读取并执行 exec_cmd.sh 的内容
+        if [ -s ~/exec_cmd.sh ]; then  # 确保文件非空才执行
+            bash ~/exec_cmd.sh
+            echo -n > ~/exec_cmd.sh  # 清空内容
+        fi
+        sleep 2
+    done
+
+    """
     _attr_has_entity_name = True
 
     def __init__(self):
