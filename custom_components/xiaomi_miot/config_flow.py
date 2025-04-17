@@ -18,8 +18,9 @@ from homeassistant.const import (
 from homeassistant.core import callback, split_entity_id
 from homeassistant.util import yaml
 from homeassistant.components import persistent_notification
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import format_mac
-import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.selector import ObjectSelector
 
 from . import (
     DOMAIN,
@@ -30,11 +31,14 @@ from . import (
     DEFAULT_NAME,
     DEFAULT_CONN_MODE,
     init_integration_data,
+)
+from .core.utils import (
     get_customize_via_entity,
     get_customize_via_model,
+    in_china,
+    async_analytics_track_event,
 )
-from .core.utils import in_china, async_analytics_track_event
-from .core.const import SUPPORTED_DOMAINS, CLOUD_SERVERS, CONF_XIAOMI_CLOUD
+from .core.const import SUPPORTED_DOMAINS, CLOUD_SERVERS, CONF_XIAOMI_CLOUD, HA_VERSION
 from .core.miot_spec import MiotSpec
 from .core.xiaomi_cloud import (
     MiotCloud,
@@ -112,18 +116,30 @@ async def check_miio_device(hass, user_input, errors):
     return user_input
 
 
-class BaseFlowHandler(config_entries.ConfigEntryBaseFlow):
-    cloud: MiotCloud = None
+class BaseFlowHandler:
+    hass = None
+    context = None
+    config_data = None
+    cloud: Optional[MiotCloud] = None
     devices: Optional[list] = None
 
     async def get_cloud(self, user_input):
         if not self.cloud:
-            self.cloud = await MiotCloud.from_token(self.hass, user_input, login=False)
+            login_data = {
+                **user_input,
+                'auto_verify': True,
+            }
+            self.cloud = await MiotCloud.from_token(self.hass, login_data, login=False)
             self.cloud.login_times = 0
-            if not await self.cloud.async_check_auth(False):
-                raise MiCloudException('Login failed')
+        login_data = {}
+        if verify_ticket := user_input.get('verify_ticket'):
+            login_data['verify_ticket'] = verify_ticket
         if captcha := user_input.get('captcha'):
-            await self.cloud.async_login(captcha=captcha)
+            login_data['captcha'] = captcha
+        if login_data:
+            await self.cloud.async_login(auto_verify=True, login_data=login_data)
+        elif not await self.cloud.async_check_auth(notify=False, auto_verify=True):
+            raise MiCloudException('Login failed')
         return self.cloud
 
     async def check_xiaomi_account(self, user_input, errors, renew_devices=False):
@@ -138,17 +154,11 @@ class BaseFlowHandler(config_entries.ConfigEntryBaseFlow):
         except (MiCloudException, MiCloudAccessDenied, Exception) as exc:
             err = f'{exc}'
             errors['base'] = 'cannot_login'
+            if not mic:
+                mic = self.cloud
             if isinstance(exc, MiCloudAccessDenied) and mic:
-                if url := mic.attrs.pop('notificationUrl', None):
-                    err = f'The login of Xiaomi account needs security verification. [Click here]({url}) to continue!\n' \
-                          f'本次登录小米账号需要安全验证，[点击这里]({url})继续！你需要在与HA宿主机同局域网的设备下完成安全验证，' \
-                          '如果你的HA部署在云服务器，可能将无法验证通过。'
-                    persistent_notification.create(
-                        self.hass,
-                        err,
-                        f'Login to Xiaomi: {mic.username}',
-                        f'{DOMAIN}-login',
-                    )
+                if identity_session := mic.attrs.get('identity_session'):
+                    self.context['identity_session'] = identity_session
                 elif url := mic.attrs.pop('captchaImg', None):
                     err = f'Captcha:\n![captcha](data:image/jpeg;base64,{url})'
                     self.context['captchaIck'] = mic.attrs.get('captchaIck')
@@ -230,7 +240,6 @@ class BaseFlowHandler(config_entries.ConfigEntryBaseFlow):
                 schema = schema.extend({
                     vol.Optional('home_ids', default=[]): cv.multi_select(homes),
                 })
-            self.hass.data[DOMAIN]['prev_input'] = user_input
         tip = ''
         if user_input.get(CONF_CONN_MODE) == 'local':
             url = 'https://github.com/al-one/hass-xiaomi-miot/issues/100#issuecomment-855183156'
@@ -248,6 +257,7 @@ class BaseFlowHandler(config_entries.ConfigEntryBaseFlow):
 
 class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=DOMAIN):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
+    filter_models = None
 
     @staticmethod
     @callback
@@ -278,8 +288,8 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
         }
         if self.hass.data[DOMAIN].get('entities', {}):
             actions.update({
+                'customizing_device': 'Customizing device (自定义设备) <推荐>',
                 'customizing_entity': 'Customizing entity (自定义实体)',
-                'customizing_device': 'Customizing device (自定义设备)',
             })
         return self.async_show_form(
             step_id='user',
@@ -328,8 +338,14 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             await self.check_xiaomi_account(user_input, errors, renew_devices=True)
             if not errors:
                 user_input['filtering'] = True
+                self.config_data = user_input
+                self.filter_models = user_input.get('filter_models')
                 return await self.async_step_cloud_filter(user_input)
         schema = {}
+        if self.context.get('identity_session'):
+            schema.update({
+                vol.Required('verify_ticket', default=''): str,
+            })
         if self.context.get('captchaIck'):
             schema.update({
                 vol.Required('captcha', default=''): str,
@@ -341,6 +357,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
                 vol.In(CLOUD_SERVERS),
             vol.Required(CONF_CONN_MODE, default=user_input.get(CONF_CONN_MODE, 'auto')):
                 vol.In(CONN_MODES),
+            vol.Optional('trans_options', default=user_input.get('trans_options', False)): bool,
             vol.Optional('filter_models', default=user_input.get('filter_models', False)): bool,
         })
         return self.async_show_form(
@@ -355,22 +372,23 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
         schema = vol.Schema({})
         if user_input is None:
             user_input = {}
-        via_did = not user_input.get('filter_models')
+        via_did = not self.filter_models
         home_ids = user_input.pop('home_ids', [])
-        if user_input.get('filtering') or home_ids:
+        if user_input.pop('filtering', None) or home_ids:
             schema = await self.get_cloud_filter_schema(user_input, errors, schema, via_did=via_did, home_ids=home_ids)
-        elif 'prev_input' in self.hass.data[DOMAIN]:
-            prev_input = self.hass.data[DOMAIN].pop('prev_input', None) or {}
-            cfg = self.cloud.to_config() or {}
-            cfg.update({
-                CONF_CONN_MODE: prev_input.get(CONF_CONN_MODE),
+        elif user_input:
+            if not self.config_data:
+                self.config_data = {}
+            self.config_data.update({
+                **(self.cloud.to_config() or {}),
                 **user_input,
+                'filter_models': self.filter_models,
+                CONF_CONFIG_VERSION: ENTRY_VERSION,
             })
-            cfg[CONF_CONFIG_VERSION] = ENTRY_VERSION
-            _LOGGER.debug('Setup xiaomi cloud: %s', {**cfg, CONF_PASSWORD: '*', 'service_token': '*'})
+            _LOGGER.debug('Setup xiaomi cloud: %s', {**self.config_data, CONF_PASSWORD: '*', 'service_token': '*'})
             return self.async_create_entry(
-                title=f"Xiaomi: {cfg.get('user_id')}",
-                data=cfg,
+                title=f"Xiaomi: {self.config_data.get('user_id')}",
+                data=self.config_data,
             )
         else:
             errors['base'] = 'unknown'
@@ -383,7 +401,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
 
     async def async_step_customizing(self, user_input=None):
         tip = ''
-        via = self.context.get('customizing_via') or 'customizing_entity'
+        via = self.context.get('customizing_via') or 'customizing_device'
         self.context['customizing_via'] = via
         entry = await self.async_set_unique_id(f'{DOMAIN}-customizes')
         entry_data = copy.deepcopy(dict(entry.data) if entry else {})
@@ -410,10 +428,10 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             'switch_properties': cv.string,
             'number_properties': cv.string,
             'select_properties': cv.string,
-            'cover_properties': cv.string,
+            'button_properties': cv.string,
+            'target_position_properties': cv.string,
             'sensor_attributes': cv.string,
             'binary_sensor_attributes': cv.string,
-            'button_properties': cv.string,
             'button_actions': cv.string,
             'select_actions': cv.string,
             'text_actions': cv.string,
@@ -421,7 +439,8 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             'fan_services': cv.string,
             'exclude_miot_services': cv.string,
             'exclude_miot_properties': cv.string,
-            'main_miot_services': cv.string,
+            'configuration_entities': cv.string,
+            'diagnostic_entities': cv.string,
             'cloud_delay_update': cv.string,
         }
         options = {
@@ -433,16 +452,23 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
         if last_step and customize_key:
             reset = user_input.pop('reset_customizes', None)
             b2s = user_input.pop('bool2selects', None) or []
-            for k in b2s:
-                user_input[k] = True
-            entry_data.setdefault(via, {})
-            entry_data[via][customize_key] = {
-                k: v
-                for k, v in user_input.items()
-                if v not in [' ', '', None, vol.UNDEFINED]
-            }
+            customize_data = entry_data.setdefault(via, {})
             if reset:
                 entry_data[via].pop(customize_key, None)
+            elif self.context.get('yaml_mode'):
+                yml = user_input.get('yaml_customizes') or {}
+                if yml:
+                    customize_data[customize_key] = yml
+                else:
+                    entry_data[via].pop(customize_key, None)
+            else:
+                for k in b2s:
+                    user_input[k] = True
+                customize_data[customize_key] = {
+                    k: v
+                    for k, v in user_input.items()
+                    if v not in [' ', '', None, vol.UNDEFINED]
+                }
             if entry:
                 self.hass.config_entries.async_update_entry(entry, data=entry_data)
                 await self.hass.config_entries.async_reload(entry.entry_id)
@@ -486,10 +512,14 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
                 if entities:
                     schema.update({
                         vol.Required('entity'): vol.In(entities),
+                        vol.Optional('yaml_mode', default=user_input.get('yaml_mode', False)): cv.boolean,
                     })
                 else:
                     tip = f'None entities in `{domain}`'
             else:
+                tip = ('⚠️ 自定义实体后续可能会弃用，推荐通过设备型号**自定义设备**。\n'
+                       'The Customization of entity may be deprecated in the future, '
+                       'it is recommended to customize the device through the device model.')
                 schema.update({
                     vol.Required('domain', default=user_input.get('domain', vol.UNDEFINED)): vol.In(SUPPORTED_DOMAINS),
                     vol.Optional('only_main_entity', default=user_input.get('only_main_entity', True)): cv.boolean,
@@ -517,7 +547,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
                 for v in self.hass.data[DOMAIN].values():
                     if isinstance(v, dict):
                         if mod := v.get('miio_info', {}).get(CONF_MODEL):
-                            models.append(mod)
+                            models[mod] = v
                         v = v.get(CONF_XIAOMI_CLOUD)
                     if isinstance(v, MiotCloud):
                         mic = v
@@ -531,6 +561,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
                     })
                 schema.update({
                     vol.Optional('model_specified'): str,
+                    vol.Optional('yaml_mode', default=user_input.get('yaml_mode', False)): cv.boolean,
                 })
 
         if last_step := self.context.get('last_step', last_step):
@@ -542,24 +573,30 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             if not options:
                 tip += f'\n\n无可用的自定义选项。' if in_china(self.hass) else f'\n\nNo customizable options are available.'
 
-            if 'bool2selects' in options:
-                options['bool2selects'] = cv.multi_select(dict(zip(bool2selects, bool2selects)))
-                customizes['bool2selects'] = [
-                    k
-                    for k in bool2selects
-                    if customizes.get(k)
-                ]
-            schema.update({
-                vol.Optional(k, default=customizes.get(k, vol.UNDEFINED), description=k): v
-                for k, v in options.items()
-            })
-            schema.update({
-                vol.Optional('reset_customizes', default=False): cv.boolean,
-            })
-            customizes.pop('bool2selects', None)
             customizes.pop('extend_miot_specs', None)
-            if customizes:
-                tip += f'\n```yaml\n{yaml.dump(customizes)}\n```'
+            self.context['yaml_mode'] = user_input.get('yaml_mode')
+            if self.context['yaml_mode']:
+                schema.update({
+                    vol.Optional('yaml_customizes', default=customizes): ObjectSelector(),
+                })
+            else:
+                if 'bool2selects' in options:
+                    options['bool2selects'] = cv.multi_select(dict(zip(bool2selects, bool2selects)))
+                    customizes['bool2selects'] = [
+                        k
+                        for k in bool2selects
+                        if customizes.get(k)
+                    ]
+                schema.update({
+                    vol.Optional(k, default=customizes.get(k, vol.UNDEFINED), description=k): v
+                    for k, v in options.items()
+                })
+                schema.update({
+                    vol.Optional('reset_customizes', default=False): cv.boolean,
+                })
+                if customizes:
+                    customizes.pop('bool2selects', None)
+                    tip += f'\n```yaml\n{yaml.dump(customizes)}\n```'
 
         return self.async_show_form(
             step_id='customizing',
@@ -572,7 +609,8 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
 
 class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
     def __init__(self, config_entry: config_entries.ConfigEntry):
-        self.config_entry = config_entry
+        if HA_VERSION < '2024.12':
+            self.config_entry = config_entry
 
     @property
     def saved_config(self):
@@ -581,9 +619,23 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             **self.config_entry.options,
         }
 
+    @property
+    def filter_models(self):
+        data = self.saved_config
+        if data.get('did_list'):
+            return False
+        if data.get('model_list'):
+            return True
+        if 'did_list' in data:
+            return False
+        if 'model_list' in data:
+            return True
+        return data.get('filter_models', False)
+
     async def async_step_init(self, user_input=None):
         data = self.config_entry.data
         if CONF_USERNAME in data:
+            self.config_data = self.saved_config
             return await self.async_step_cloud()
 
         if 'customizing_entity' in data or 'customizing_device' in data:
@@ -612,7 +664,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
                 )
                 return self.async_create_entry(title='', data=opt)
         else:
-            user_input = {**self.config_entry.data, **self.config_entry.options}
+            user_input = self.saved_config
         return self.async_show_form(
             step_id='user',
             data_schema=vol.Schema({
@@ -637,18 +689,22 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             renew = not not user_input.pop('renew_devices', False)
             await self.check_xiaomi_account(user_input, errors, renew_devices=renew)
             if not errors:
-                user_input['filter_models'] = prev_input.get('filter_models') and True
-                if prev_input.get('filter_model'):
-                    user_input['filter_models'] = True
                 user_input['filtering'] = True
+                self.config_data.update(user_input)
                 return await self.async_step_cloud_filter(user_input)
         else:
             user_input = prev_input
         schema = {}
+        if self.context.get('identity_session'):
+            schema.update({
+                vol.Required('verify_ticket', default=''): str,
+            })
         if self.context.get('captchaIck'):
             schema.update({
                 vol.Required('captcha', default=''): str,
             })
+        if user_input.get('trans_options') == None:
+            user_input['trans_options'] = False
         schema.update({
             vol.Required(CONF_USERNAME, default=user_input.get(CONF_USERNAME, vol.UNDEFINED)): str,
             vol.Required(CONF_PASSWORD, default=user_input.get(CONF_PASSWORD, vol.UNDEFINED)): str,
@@ -657,6 +713,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             vol.Required(CONF_CONN_MODE, default=user_input.get(CONF_CONN_MODE, DEFAULT_CONN_MODE)):
                 vol.In(CONN_MODES),
             vol.Optional('renew_devices', default=user_input.get('renew_devices', False)): bool,
+            vol.Optional('trans_options', default=user_input.get('trans_options', False)): bool,
             vol.Optional('disable_message', default=user_input.get('disable_message', False)): bool,
             vol.Optional('disable_scene_history', default=user_input.get('disable_scene_history', False)): bool,
         })
@@ -672,27 +729,29 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
         schema = vol.Schema({})
         if user_input is None:
             user_input = {}
-        via_did = not self.saved_config.get('filter_models')
+        via_did = not self.filter_models
         home_ids = user_input.pop('home_ids', [])
-        if user_input.get('filtering') or home_ids:
+        if user_input.pop('filtering', None) or home_ids:
             user_input = {
                 **self.saved_config,
                 **user_input,
             }
             schema = await self.get_cloud_filter_schema(user_input, errors, schema, via_did=via_did, home_ids=home_ids)
-        elif 'prev_input' in self.hass.data[DOMAIN]:
-            prev_input = self.hass.data[DOMAIN].pop('prev_input', None) or {}
-            cfg = self.cloud.to_config() or {}
-            cfg.update({
-                CONF_CONN_MODE: prev_input.get(CONF_CONN_MODE),
-                'disable_message': prev_input.get('disable_message'),
-                'disable_scene_history': prev_input.get('disable_scene_history'),
+        elif user_input:
+            self.config_data.update({
+                **(self.cloud.to_config() or {}),
+                'filter_models': self.filter_models,
                 **user_input,
             })
-            self.hass.config_entries.async_update_entry(
-                self.config_entry, data={**self.config_entry.data, **cfg}
-            )
-            _LOGGER.debug('Setup xiaomi cloud: %s', {**cfg, CONF_PASSWORD: '*', 'service_token': '*'})
+            self.config_data.pop('filtering', None)
+            if self.filter_models:
+                self.config_data.pop('filter_did', None)
+                self.config_data.pop('did_list', None)
+            else:
+                self.config_data.pop('filter_model', None)
+                self.config_data.pop('model_list', None)
+            self.hass.config_entries.async_update_entry(self.config_entry, data=self.config_data)
+            _LOGGER.debug('Setup xiaomi cloud: %s', {**self.config_data, CONF_PASSWORD: '*', 'service_token': '*'})
             return self.async_create_entry(title='', data={})
         else:
             errors['base'] = 'unknown'
@@ -788,8 +847,7 @@ def get_customize_options(hass, options={}, bool2selects=[], entity_id='', model
 
     if domain == 'cover' or re.search(r'airer|curtain|wopener', model, re.I):
         bool2selects.extend([
-            'motor_reverse', 'auto_position_reverse', 'position_reverse',
-            'disable_target_position', 'target2current_position',
+            'motor_reverse', 'auto_position_reverse', 'position_reverse', 'target2current_position',
         ])
         options.update({
             'closed_position': cv.string,

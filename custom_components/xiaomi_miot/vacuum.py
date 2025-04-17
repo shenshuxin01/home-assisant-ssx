@@ -12,16 +12,13 @@ from homeassistant.components.vacuum import (  # noqa: F401
     DOMAIN as ENTITY_DOMAIN,
     StateVacuumEntity,
     VacuumEntityFeature,  # v2022.5
-    STATE_CLEANING,
-    STATE_DOCKED,
-    STATE_RETURNING,
-    STATE_ERROR,
 )
 
 from . import (
     DOMAIN,
     CONF_MODEL,
     XIAOMI_CONFIG_SCHEMA as PLATFORM_SCHEMA,  # noqa: F401
+    HassEntry,
     MiotEntity,
     DeviceException,
     MIOT_LOCAL_MODELS,
@@ -33,6 +30,8 @@ from .core.miot_spec import (
     MiotService,
 )
 
+from .core.const import VacuumActivity
+
 _LOGGER = logging.getLogger(__name__)
 DATA_KEY = f'{ENTITY_DOMAIN}.{DOMAIN}'
 SCAN_INTERVAL = timedelta(seconds=60)
@@ -41,6 +40,7 @@ SERVICE_TO_METHOD = {}
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
+    HassEntry.init(hass, config_entry).new_adder(ENTITY_DOMAIN, async_add_entities)
     await async_setup_config_entry(hass, config_entry, async_setup_platform, async_add_entities, ENTITY_DOMAIN)
 
 
@@ -70,6 +70,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 
 class MiotVacuumEntity(MiotEntity, StateVacuumEntity):
+    _attr_activity = None
+
     def __init__(self, config: dict, miot_service: MiotService):
         super().__init__(miot_service, config=config, logger=_LOGGER)
 
@@ -124,20 +126,9 @@ class MiotVacuumEntity(MiotEntity, StateVacuumEntity):
         await super().async_update()
         if not self._available:
             return
-        self._prop_status.description_to_dict(self._state_attrs)
-
-    @property
-    def status(self):
         if self._prop_status:
-            val = self._prop_status.from_dict(self._state_attrs)
-            if val is not None:
-                return self._prop_status.list_description(val)
-        return None
-
-    @property
-    def state(self):
-        if self._prop_status:
-            val = self._prop_status.from_dict(self._state_attrs)
+            self._prop_status.description_to_dict(self._state_attrs)
+            val = self._prop_status.from_device(self.device)
             if val is None:
                 pass
             elif val in self._prop_status.list_search(
@@ -145,25 +136,25 @@ class MiotVacuumEntity(MiotEntity, StateVacuumEntity):
                 'Part Sweeping', 'Zone Sweeping', 'Select Sweeping', 'Spot Sweeping', 'Goto Target',
                 'Starting', 'Working', 'Busy', 'DustCollecting'
             ):
-                return STATE_CLEANING
+                self._attr_activity = VacuumActivity.CLEANING
             elif val in self._prop_status.list_search('Idle', 'Sleep'):
-                return STATE_IDLE
+                self._attr_activity = VacuumActivity.IDLE
             elif val in self._prop_status.list_search('Charging', 'Charging Completed', 'Fullcharge', 'Charge Done', 'Drying'):
-                return STATE_DOCKED
+                self._attr_activity = VacuumActivity.DOCKED
             elif val in self._prop_status.list_search('Go Charging'):
-                return STATE_RETURNING
+                self._attr_activity = VacuumActivity.RETURNING
             elif val in self._prop_status.list_search('Paused'):
-                return STATE_PAUSED
+                self._attr_activity = STATE_PAUSED
             elif val in self._prop_status.list_search('Error', 'Charging Problem'):
-                return STATE_ERROR
+                self._attr_activity = VacuumActivity.ERROR
             else:
-                return self._prop_status.list_description(val)
-        return None
+                self._attr_activity = None
+                self._attr_state = self._prop_status.list_description(val)
 
     @property
     def battery_level(self):
         if self._prop_battery:
-            return self._prop_battery.from_dict(self._state_attrs)
+            return self._prop_battery.from_device(self.device)
         return None
 
     def turn_on(self, **kwargs):
@@ -191,7 +182,7 @@ class MiotVacuumEntity(MiotEntity, StateVacuumEntity):
 
     def start_pause(self, **kwargs):
         sta = self.state
-        if sta == STATE_CLEANING:
+        if sta == VacuumActivity.CLEANING:
             return self.pause()
         return self.start()
 
@@ -211,7 +202,7 @@ class MiotVacuumEntity(MiotEntity, StateVacuumEntity):
     @property
     def fan_speed(self):
         if self._prop_fan:
-            val = self._prop_fan.from_dict(self._state_attrs)
+            val = self._prop_fan.from_device(self.device)
             try:
                 val = int(val)
             except (TypeError, ValueError):
@@ -256,7 +247,7 @@ class MiotRoborockVacuumEntity(MiotVacuumEntity):
         await super().async_added_to_hass()
         rooms = await self.get_room_mapping() or []
 
-        if add_buttons := self._add_entities.get('button'):
+        if add_buttons := self.device.entry.adders.get('button'):
             from .button import ButtonSubEntity
             for r in rooms:
                 if len(r) < 3:
@@ -270,6 +261,7 @@ class MiotRoborockVacuumEntity(MiotVacuumEntity):
                     'state_attrs': {'room_id': r[1]},
                 })
                 add_buttons([self._subs[sub]], update_before_add=False)
+        self.logger.info('Room buttons: %s', [rooms, add_buttons])
 
 
     async def async_update(self):
@@ -286,12 +278,13 @@ class MiotRoborockVacuumEntity(MiotVacuumEntity):
             adt['clean_time'] = round(props['clean_time'] / 60, 1)
         if adt:
             await self.async_update_attrs(adt)
+            self.device.dispatch(self.device.decode_attrs({'props': props}))
 
     async def get_room_mapping(self):
         if not self.miot_device:
             return None
         try:
-            rooms = self.miot_device.send('get_room_mapping')
+            rooms = await self.miot_device.async_send('get_room_mapping')
             if rooms and rooms != 'unknown_method':
                 homes = await self.xiaomi_cloud.async_get_homerooms() if self.xiaomi_cloud else []
                 cloud_rooms = {}
@@ -306,7 +299,9 @@ class MiotRoborockVacuumEntity(MiotVacuumEntity):
                     else:
                         r[2] = name
                 self._state_attrs['room_mapping'] = rooms
+                self.logger.info('Vacuum rooms: %s', rooms)
                 return rooms
+            self.logger.info('Vacuum rooms: %s', rooms)
         except (DeviceException, Exception):
             pass
         return None
@@ -329,7 +324,7 @@ class MiotRoborockVacuumEntity(MiotVacuumEntity):
         return super().pause()
 
     def return_to_base(self, **kwargs):
-        if self._model in ['rockrobo.vacuum.v1']:
+        if self.model in ['rockrobo.vacuum.v1']:
             self.stop()
         return super().return_to_base()
 
@@ -361,9 +356,11 @@ class MiotRoborockVacuumEntity(MiotVacuumEntity):
         if not segments:
             self.return_to_base()
             return False
-        if self.state == STATE_CLEANING:
+        if self.state == VacuumActivity.CLEANING:
             self.pause()
             time.sleep(1)
+        if self.model in ['roborock.vacuum.m1s']:
+            return self.send_miio_command('app_segment_clean', segments)
         return self.send_miio_command('app_segment_clean', [{'segments': segments, 'repeat': repeat}])
 
 
@@ -388,7 +385,7 @@ class MiotViomiVacuumEntity(MiotVacuumEntity):
             return
         if self._miio2miot:
             await self.async_update_miio_props(self._miio_props)
-        props = self._state_attrs or {}
+        props = self.device.props or {}
         adt = {}
         if 'miio.s_area' in props:
             adt['clean_area'] = props['miio.s_area']
@@ -396,6 +393,7 @@ class MiotViomiVacuumEntity(MiotVacuumEntity):
             adt['clean_time'] = props['miio.s_time']
         if adt:
             await self.async_update_attrs(adt)
+            self.device.dispatch(self.device.decode_attrs(adt))
 
     def locate(self, **kwargs):
         """Locate the vacuum cleaner."""

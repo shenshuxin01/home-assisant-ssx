@@ -24,11 +24,11 @@ TRANSLATION_LANGUAGES = {
         },
 
         'fan_level': {
-            # 'auto': '自动',
-            # 'low': '低档',
-            # 'medium': '中档',
-            # 'middle': '中档',
-            # 'high': '高档',
+            'auto': 'auto',
+            'low': 'low',
+            'medium': 'medium',
+            'middle': 'middle',
+            'high': 'high',
             'quiet': '静音',
             'turbo': '超强',
             'level1': '一档',
@@ -262,7 +262,6 @@ TRANSLATION_LANGUAGES = {
             'robot cleaner': '扫地机',
             'robot cleaner status': '扫地机状态',
         },
-
         'vacuum.mode': {
             'basic': '正常',
             'silent': '安静',
@@ -270,6 +269,12 @@ TRANSLATION_LANGUAGES = {
             'strong': '强力',
             'turbo': '强力',
             'full speed': '全速',
+        },
+        'vacuum.sweep_mop_type': {
+            'sweep': '扫地',
+            'mop': '拖地',
+            'sweep mop': '扫拖同步',
+            'sweep before mopping': '先扫后拖',
         },
 
         'washer': {
