@@ -44,3 +44,40 @@ http:
 homeassistant:
   media_dirs:
     media: /config/media
+
+
+# 自动化配置
+automation:
+  - alias: 冰箱已打开
+    description: 冰箱已打开1
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.bing_xiang_men_chuan_gan_qi
+        from: "off"
+        to: "on"
+    condition: []
+    action:
+      - device_id: 2c860e3b2531c3a912998507ceb7c400
+        domain: text
+        entity_id: 23433649854710410e2206d0287850fe
+        type: set_value
+        value: 冰箱已打开
+    mode: single
+
+  - alias: 冰箱已关闭
+    description: 冰箱已关闭1
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.bing_xiang_men_chuan_gan_qi
+        from: "on"
+        to: "off"
+    condition: []
+    action:
+      - device_id: 2c860e3b2531c3a912998507ceb7c400
+        domain: text
+        entity_id: 23433649854710410e2206d0287850fe
+        type: set_value
+        value: 冰箱已关闭
+    mode: single
