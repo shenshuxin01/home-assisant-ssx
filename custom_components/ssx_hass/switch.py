@@ -31,7 +31,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([N2ScreenSwitch(),MiniLightSwitch(),IceSwitch()])
+    add_entities([N2ScreenSwitch(),MiniLightSwitch()])
 
 
 def lock_sessions(lock_sessions: bool = True):
@@ -178,50 +178,50 @@ class MiniLightSwitch(SwitchEntity):
             self._is_on = False
 
 
-class IceSwitch(SwitchEntity):
-    _attr_has_entity_name = True
-
-    def __init__(self):
-        #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
-        _LOGGER.info('init IceSwitch start!')
-        self._is_on: bool = True
-        self._attr_device_info = "IceSwitch_attr_device_info"  # For automatic device registration
-        self._attr_unique_id = "IceSwitch_attr_unique_id"
-
-    @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        _LOGGER.debug(f'extra_state_attributes Run')
-        attributes = {
-            'friendly_name': f'冰箱门开关'
-        }
-        return attributes
-
-    def update(self) -> None:
-        _LOGGER.debug('update IceSwitch start! %s', self._is_on)
-        result = exec_cmd_ret_out("echo -e eeSx671Status | nc 192.168.0.104 81", 10)
-        _LOGGER.info("exec ret %s", result)
-        if str(result) == "switch1":
-            self._is_on = True
-        elif str(result) == "switch0":
-            self._is_on = False
-        else:
-            _LOGGER.error("ice status check fail! not ask resp on 192.168.0.104")
-
-    @property
-    def is_on(self):
-        """If the switch is currently on or off."""
-        _LOGGER.info('is_on.self------------')
-        return self._is_on
-
-    def turn_on(self, **kwargs):
-        """Turn the switch on."""
-        _LOGGER.info(f'turn_on.self={kwargs}')
-        # 不支持
-
-    # 提前设置锁屏超时时间：永不
-    def turn_off(self, **kwargs):
-        """Turn the switch off."""
-        _LOGGER.info(f'turn_off.self={kwargs}')
-        # 不支持
+# class IceSwitch(SwitchEntity):
+#     _attr_has_entity_name = True
+#
+#     def __init__(self):
+#         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
+#         _LOGGER.info('init IceSwitch start!')
+#         self._is_on: bool = True
+#         self._attr_device_info = "IceSwitch_attr_device_info"  # For automatic device registration
+#         self._attr_unique_id = "IceSwitch_attr_unique_id"
+#
+#     @property
+#     def extra_state_attributes(self):
+#         """Return the state attributes."""
+#         _LOGGER.debug(f'extra_state_attributes Run')
+#         attributes = {
+#             'friendly_name': f'冰箱门开关'
+#         }
+#         return attributes
+#
+#     def update(self) -> None:
+#         _LOGGER.debug('update IceSwitch start! %s', self._is_on)
+#         result = exec_cmd_ret_out("echo -e eeSx671Status | nc 192.168.0.104 81", 10)
+#         _LOGGER.info("exec ret %s", result)
+#         if str(result) == "switch1":
+#             self._is_on = True
+#         elif str(result) == "switch0":
+#             self._is_on = False
+#         else:
+#             _LOGGER.error("ice status check fail! not ask resp on 192.168.0.104")
+#
+#     @property
+#     def is_on(self):
+#         """If the switch is currently on or off."""
+#         _LOGGER.info('is_on.self------------')
+#         return self._is_on
+#
+#     def turn_on(self, **kwargs):
+#         """Turn the switch on."""
+#         _LOGGER.info(f'turn_on.self={kwargs}')
+#         # 不支持
+#
+#     # 提前设置锁屏超时时间：永不
+#     def turn_off(self, **kwargs):
+#         """Turn the switch off."""
+#         _LOGGER.info(f'turn_off.self={kwargs}')
+#         # 不支持
 
