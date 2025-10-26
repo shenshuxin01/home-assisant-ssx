@@ -1,4 +1,4 @@
-#自动化配置
+# 自动化配置
 - alias: 冰箱已打开
   description: 冰箱已打开1
   trigger:

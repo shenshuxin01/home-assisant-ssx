@@ -47,4 +47,4 @@ homeassistant:
 
 
 # 自动化配置
-automation:
+automation: !include automations.yaml
