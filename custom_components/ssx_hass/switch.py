@@ -31,7 +31,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([N2ScreenSwitch(),MiniLightSwitch()])
+    add_entities([N2ScreenSwitch(),MiniLightSwitch(),IceSwitch()])
 
 
 def lock_sessions(lock_sessions: bool = True):
