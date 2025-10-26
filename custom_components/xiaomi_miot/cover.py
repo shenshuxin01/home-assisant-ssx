@@ -82,6 +82,8 @@ class CoverEntity(XEntity, BaseEntity):
         self._target_position_props = self.custom_config_list('target_position_props') or []
         self._cover_position_mapping = self.custom_config_json('cover_position_mapping') or {}
 
+        if not self.conv.attrs:
+            self.conv.attrs.append(self.conv.full_name)
         for attr in self.conv.attrs:
             conv = self.device.find_converter(attr)
             prop = getattr(conv, 'prop', None) if conv else None
@@ -93,7 +95,7 @@ class CoverEntity(XEntity, BaseEntity):
                 self._conv_motor = conv
                 self._attr_supported_features |= CoverEntityFeature.OPEN
                 self._attr_supported_features |= CoverEntityFeature.CLOSE
-                if prop.list_first('Stop', 'Pause') != None:
+                if prop.list_first('Stop', 'Pause') is not None:
                     self._attr_supported_features |= CoverEntityFeature.STOP
             elif prop.in_list(['current_position']):
                 if prop.value_range:
@@ -138,6 +140,10 @@ class CoverEntity(XEntity, BaseEntity):
         prop_status = getattr(self._conv_status, 'prop', None) if self._conv_status else None
         if prop_status:
             val = self._conv_status.value_from_dict(data)
+            if val is not None:
+                self._attr_is_closed = None
+                self._attr_is_opening = None
+                self._attr_is_closing = None
             if val in prop_status.list_search('Closed'):
                 self._attr_is_closed = True
             elif val in prop_status.list_search('Opened'):
@@ -156,14 +162,6 @@ class CoverEntity(XEntity, BaseEntity):
                 self._attr_is_closed = self._position_reverse
             elif self._is_airer and val in prop_status.list_search('Down'):
                 self._attr_is_closed = False
-            else:
-                self._attr_is_closed = None
-                self._attr_is_opening = None
-                self._attr_is_closing = None
-            if self._attr_is_opening is not None:
-                self._attr_is_closing = not self._attr_is_opening
-            elif self._attr_is_closing is not None:
-                self._attr_is_opening = not self._attr_is_closing
         if self._conv_current_position:
             val = self._conv_current_position.value_from_dict(data)
             if val is not None:
@@ -204,7 +202,7 @@ class CoverEntity(XEntity, BaseEntity):
     async def async_open_cover(self, **kwargs):
         if conv := self._conv_motor:
             val = conv.prop.list_first(*self._open_texts)
-            if val != None:
+            if val is not None:
                 await self.device.async_write({conv.full_name: val})
                 return
             self.log.warning('No open command found in motor control property: %s', self._open_texts)
@@ -213,7 +211,7 @@ class CoverEntity(XEntity, BaseEntity):
     async def async_close_cover(self, **kwargs):
         if conv := self._conv_motor:
             val = conv.prop.list_first(*self._close_texts)
-            if val != None:
+            if val is not None:
                 await self.device.async_write({conv.full_name: val})
                 return
             self.log.warning('No close command found in motor control property: %s', [self._close_texts, conv.prop.value_list])
@@ -223,7 +221,7 @@ class CoverEntity(XEntity, BaseEntity):
         if not self._conv_motor:
             return
         val = self._conv_motor.prop.list_first('Stop', 'Pause')
-        if val != None:
+        if val is not None:
             await self.device.async_write({self._conv_motor.full_name: val})
 
     async def async_set_cover_position(self, position, **kwargs):
@@ -232,5 +230,6 @@ class CoverEntity(XEntity, BaseEntity):
         if self._position_reverse:
             position = self._target_range[1] - position
         await self.device.async_write({self._conv_target_position.full_name: position})
+
 
 XEntity.CLS[ENTITY_DOMAIN] = CoverEntity

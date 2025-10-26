@@ -33,22 +33,21 @@ from . import (
     init_integration_data,
 )
 from .core.utils import (
+    DeviceException,
     get_customize_via_entity,
     get_customize_via_model,
     in_china,
     async_analytics_track_event,
 )
 from .core.const import SUPPORTED_DOMAINS, CLOUD_SERVERS, CONF_XIAOMI_CLOUD, HA_VERSION
+from .core.device import MiioInfo
 from .core.miot_spec import MiotSpec
+from .core.mini_miio import AsyncMiIO
 from .core.xiaomi_cloud import (
     MiotCloud,
     MiCloudException,
     MiCloudAccessDenied,
-)
-
-from miio import (
-    Device as MiioDevice,
-    DeviceException,
+    MiCloudNeedVerify,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,8 +69,10 @@ async def check_miio_device(hass, user_input, errors):
     host = user_input.get(CONF_HOST)
     token = user_input.get(CONF_TOKEN)
     try:
-        device = MiioDevice(host, token)
-        info = await hass.async_add_executor_job(device.info)
+        device = AsyncMiIO(host, token)
+        info = await device.info()
+        if info:
+            info = MiioInfo(info)
     except DeviceException:
         device = None
         info = None
@@ -86,7 +87,7 @@ async def check_miio_device(hass, user_input, errors):
         if not user_input.get(CONF_MODEL):
             model = str(info.model or '')
             user_input[CONF_MODEL] = model
-        user_input['miio_info'] = dict(info.raw or {})
+        user_input['miio_info'] = dict(info or {})
         miot_type = await MiotSpec.async_get_model_type(hass, model)
         if not miot_type:
             miot_type = await MiotSpec.async_get_model_type(hass, model, use_remote=True)
@@ -99,7 +100,7 @@ async def check_miio_device(hass, user_input, errors):
                     {'did': 'miot', 'siid': 2, 'piid': 2},
                     {'did': 'miot', 'siid': 3, 'piid': 1},
                 ]
-                results = device.get_properties(pms, property_getter='get_properties') or []
+                results = await device.send('get_properties', pms) or []
                 for prop in results:
                     if not isinstance(prop, dict):
                         continue
@@ -109,6 +110,9 @@ async def check_miio_device(hass, user_input, errors):
                             hass, 'miot', 'local', model,
                             firmware=info.firmware_version,
                             results=results,
+                            miot_urn=miot_type,
+                            ap_rssi=info.get('ap', {}).get('rssi', ''),
+                            wifi_fw_ver=info.get('wifi_fw_ver', ''),
                         )
                         break
             except DeviceException:
@@ -123,22 +127,29 @@ class BaseFlowHandler:
     cloud: Optional[MiotCloud] = None
     devices: Optional[list] = None
 
+    @property
+    def placeholders(self):
+        return self.context.setdefault('placeholders', {})
+
+    def pop_placeholders(self):
+        return {
+            'tip': '',
+            **self.context.pop('placeholders', {}),
+        }
+
     async def get_cloud(self, user_input):
         if not self.cloud:
-            login_data = {
-                **user_input,
-                'auto_verify': True,
-            }
-            self.cloud = await MiotCloud.from_token(self.hass, login_data, login=False)
+            self.cloud = await MiotCloud.from_token(self.hass, user_input, login=False)
             self.cloud.login_times = 0
+        self.cloud.merger_config(user_input)
         login_data = {}
-        if verify_ticket := user_input.get('verify_ticket'):
+        if verify_ticket := user_input.pop('verify_ticket', None):
             login_data['verify_ticket'] = verify_ticket
-        if captcha := user_input.get('captcha'):
+        if captcha := user_input.pop('captcha', None):
             login_data['captcha'] = captcha
         if login_data:
-            await self.cloud.async_login(auto_verify=True, login_data=login_data)
-        elif not await self.cloud.async_check_auth(notify=False, auto_verify=True):
+            await self.cloud.async_login(login_data=login_data)
+        elif not await self.cloud.async_check_auth(notify=False):
             raise MiCloudException('Login failed')
         return self.cloud
 
@@ -153,22 +164,28 @@ class BaseFlowHandler:
             self.context.pop('captchaIck', None)
         except (MiCloudException, MiCloudAccessDenied, Exception) as exc:
             err = f'{exc}'
+            self.placeholders['tip'] = f'⚠️ {err}'
             errors['base'] = 'cannot_login'
             if not mic:
                 mic = self.cloud
-            if isinstance(exc, MiCloudAccessDenied) and mic:
-                if identity_session := mic.attrs.get('identity_session'):
-                    self.context['identity_session'] = identity_session
-                elif url := mic.attrs.pop('captchaImg', None):
+            if isinstance(exc, MiCloudNeedVerify) and mic:
+                errors['base'] = exc.message
+                self.context[exc.message] = True
+                self.placeholders.update({
+                    'url': exc.url,
+                    'tip': f'[打开验证网页 | Open the verification page]({exc.url})',
+                })
+            elif isinstance(exc, MiCloudAccessDenied) and mic:
+                if url := mic.attrs.pop('captchaImg', None):
                     err = f'Captcha:\n![captcha](data:image/jpeg;base64,{url})'
+                    self.placeholders['tip'] = f'⚠️ {err}'
                     self.context['captchaIck'] = mic.attrs.get('captchaIck')
-            if isinstance(exc, requests.exceptions.ConnectionError):
+            elif isinstance(exc, requests.exceptions.ConnectionError):
                 errors['base'] = 'cannot_reach'
             elif 'ZoneInfoNotFoundError' in err:
                 errors['base'] = 'tzinfo_error'
-            self.hass.data[DOMAIN]['placeholders'] = {'tip': f'⚠️ {err}'}
             unm = mic.username if mic else user_input.get(CONF_USERNAME)
-            _LOGGER.error('Setup xiaomi cloud for user: %s failed: %s', unm, exc)
+            _LOGGER.error('Setup xiaomi cloud for user: %s failed.', unm, exc_info=True)
         if not errors:
             self.devices = dvs
             persistent_notification.dismiss(self.hass, f'{DOMAIN}-login')
@@ -251,7 +268,7 @@ class BaseFlowHandler:
                       'If the devices that does not support the local miot protocol are included,' \
                       'they will be unavailable. It is recommended to include only ' \
                       f'[the devices that supports the local mode]({url}).'
-        self.hass.data[DOMAIN]['placeholders'] = {'tip': tip}
+        self.placeholders['tip'] = tip
         return schema
 
 
@@ -342,13 +359,13 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
                 self.filter_models = user_input.get('filter_models')
                 return await self.async_step_cloud_filter(user_input)
         schema = {}
-        if self.context.get('identity_session'):
+        if self.context.get('need_verify'):
             schema.update({
-                vol.Required('verify_ticket', default=''): str,
+                vol.Optional('verify_ticket', default=''): str,
             })
         if self.context.get('captchaIck'):
             schema.update({
-                vol.Required('captcha', default=''): str,
+                vol.Optional('captcha', default=''): str,
             })
         schema.update({
             vol.Required(CONF_USERNAME, default=user_input.get(CONF_USERNAME, vol.UNDEFINED)): str,
@@ -364,7 +381,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             step_id='cloud',
             data_schema=vol.Schema(schema),
             errors=errors,
-            description_placeholders=self.hass.data[DOMAIN].pop('placeholders', {'tip': ''}),
+            description_placeholders=self.pop_placeholders(),
         )
 
     async def async_step_cloud_filter(self, user_input=None):
@@ -396,7 +413,7 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             step_id='cloud_filter',
             data_schema=schema,
             errors=errors,
-            description_placeholders=self.hass.data[DOMAIN].pop('placeholders', {'tip': ''}),
+            description_placeholders=self.pop_placeholders(),
         )
 
     async def async_step_customizing(self, user_input=None):
@@ -435,8 +452,6 @@ class XiaomiMiotFlowHandler(config_entries.ConfigFlow, BaseFlowHandler, domain=D
             'button_actions': cv.string,
             'select_actions': cv.string,
             'text_actions': cv.string,
-            'light_services': cv.string,
-            'fan_services': cv.string,
             'exclude_miot_services': cv.string,
             'exclude_miot_properties': cv.string,
             'configuration_entities': cv.string,
@@ -695,13 +710,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
         else:
             user_input = prev_input
         schema = {}
-        if self.context.get('identity_session'):
+        if self.context.get('need_verify'):
             schema.update({
-                vol.Required('verify_ticket', default=''): str,
+                vol.Optional('verify_ticket', default=''): str,
             })
         if self.context.get('captchaIck'):
             schema.update({
-                vol.Required('captcha', default=''): str,
+                vol.Optional('captcha', default=''): str,
             })
         if user_input.get('trans_options') == None:
             user_input['trans_options'] = False
@@ -721,7 +736,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             step_id='cloud',
             data_schema=vol.Schema(schema),
             errors=errors,
-            description_placeholders=self.hass.data[DOMAIN].pop('placeholders', {'tip': ''}),
+            description_placeholders=self.pop_placeholders(),
         )
 
     async def async_step_cloud_filter(self, user_input=None):
@@ -744,6 +759,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
                 **user_input,
             })
             self.config_data.pop('filtering', None)
+            self.config_data.pop('verify_ticket', None)
             if self.filter_models:
                 self.config_data.pop('filter_did', None)
                 self.config_data.pop('did_list', None)
@@ -759,7 +775,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow, BaseFlowHandler):
             step_id='cloud_filter',
             data_schema=schema,
             errors=errors,
-            description_placeholders=self.hass.data[DOMAIN].pop('placeholders', {'tip': ''}),
+            description_placeholders=self.pop_placeholders(),
         )
 
 
@@ -808,10 +824,6 @@ def get_customize_options(hass, options={}, bool2selects=[], entity_id='', model
             'stat_power_cost_key': cv.string,
             'stat_power_cost_type': cv.string,
         })
-        if entity_class in ['MiotSwitchActionSubEntity']:
-            options.update({
-                'feeding_measure': cv.string,
-            })
 
     if domain == 'light' or re.search(r'light', model, re.I):
         bool2selects.extend(['color_temp_reverse'])
