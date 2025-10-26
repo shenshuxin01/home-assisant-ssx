@@ -17,6 +17,7 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     }
 
     # hass.helpers.discovery.load_platform('sensor', DOMAIN, {}, config)
+    hass.helpers.discovery.load_platform(Platform.BINARY_SENSOR, DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
     # hass.helpers.discovery.load_platform('lock', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('camera', DOMAIN, {}, config)
