@@ -88,25 +88,25 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         self._attr_state = 'disarming'
         time.sleep(1)
         self._attr_state = 'disarmed'
-        ssx_utils.play_text_homepod('alarm_disarm')
+        # ssx_utils.play_text_homepod('alarm_disarm')
 
     def alarm_arm_home(self, code=None) -> None:
         """Send arm home command."""
         _LOGGER.info(f'alarm_arm_home Run,codeInfo:{code}')
         self._attr_state = 'armed_home'
-        ssx_utils.play_text_homepod('alarm_arm_home')
+        # ssx_utils.play_text_homepod('alarm_arm_home')
 
     def alarm_arm_away(self, code=None) -> None:
         """Send arm away command."""
         _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
         self._attr_state = 'armed_away'
-        ssx_utils.play_text_homepod('alarm_arm_away')
+        # ssx_utils.play_text_homepod('alarm_arm_away')
 
     def alarm_arm_night(self, code=None) -> None:
         """Send arm night command."""
         _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
         self._attr_state = 'armed_night'
-        ssx_utils.play_text_homepod('alarm_arm_night')
+        # ssx_utils.play_text_homepod('alarm_arm_night')
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
