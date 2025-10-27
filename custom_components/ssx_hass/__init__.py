@@ -21,7 +21,7 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
     # hass.helpers.discovery.load_platform('lock', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform('camera', DOMAIN, {}, config)
-    # hass.helpers.discovery.load_platform(Platform.ALARM_CONTROL_PANEL, DOMAIN, {}, config)
+    hass.helpers.discovery.load_platform(Platform.ALARM_CONTROL_PANEL, DOMAIN, {}, config)
     # hass.helpers.discovery.load_platform('text', DOMAIN, {}, config)
     hass.helpers.discovery.load_platform(Platform.COVER, DOMAIN, {}, config)
 

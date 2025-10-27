@@ -49,25 +49,8 @@ rest_command:
   feishu_webhook1:
     url: "https://open.feishu.cn/open-apis/bot/v2/hook/389b6cdf-cfc7-4306-86a0-9dab97a44ff7"
     method: post
-    payload: {
-                "msg_type": "interactive",
-                "card": {
-                  "schema": "2.0",
-                  "body": {
-                    "direction": "vertical",
-                    "padding": "12px 12px 12px 12px",
-                    "elements": [
-                      {
-                        "tag": "markdown",
-                        "content": "123{{ state_attr('binary_sensor.bing_xiang_men_chuan_gan_qi', 'friendly_name') }}",
-                        "text_align": "left",
-                        "text_size": "normal_v2",
-                        "margin": "0px 0px 0px 0px"
-                      }
-                    ]
-                  }
-                }
-              }
+    payload: >
+      { "msg_type": "text", "content": { "text": "{{ message }}" } }
     content_type: "application/json"
 
 # 自动化配置

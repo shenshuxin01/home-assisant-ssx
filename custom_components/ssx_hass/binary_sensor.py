@@ -42,7 +42,6 @@ class IceBinarySensor(BinarySensorEntity):
         self._attr_device_info = "IceBinarySensorDevice"  # For automatic device registration
         self._attr_unique_id = "IceBinarySensorDeviceUnique"
         self._attr_device_class = BinarySensorDeviceClass.DOOR
-        self._attr_msg_detail = '初始化中'
 
     @property
     def name(self) -> str:

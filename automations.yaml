@@ -1,57 +1,66 @@
-# 自动化配置
 - alias: 冰箱已打开
-  description: 冰箱已打开1
+  description: 冰箱门打开提醒 + 飞书通知
   mode: single
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.bing_xiang_men_chuan_gan_qi
+      entity_id: binary_sensor.bing_xiang_men_chuan_gan_qi
       from: "off"
       to: "on"
       for:
-        hours: 0
-        minutes: 0
         seconds: 10
-  condition: []
+
   action:
+    # 🗣️ 第一步：冰箱门打开提示
     - device_id: 2c860e3b2531c3a912998507ceb7c400
       domain: text
       entity_id: 23433649854710410e2206d0287850fe
       type: set_value
-      value: 冰箱已打开
-    - sequence:
-        - wait_for_trigger:
-            - platform: state
-              entity_id:
-                - binary_sensor.bing_xiang_men_chuan_gan_qi
-              from: "on"
-              to: "off"
-          continue_on_timeout: false
-          timeout:
-            hours: 0
-            minutes: 1
-            seconds: 0
-            milliseconds: 0
+      value: 冰箱门已打开
+
+    # 🕒 第二步：等待1分钟内是否关闭
+    - wait_for_trigger:
+        - platform: state
+          entity_id: binary_sensor.bing_xiang_men_chuan_gan_qi
+          from: "on"
+          to: "off"
+      timeout: "00:01:00"
+      continue_on_timeout: true
+
+    # ✅ 如果关闭了
+    - if:
+        - condition: state
+          entity_id: binary_sensor.bing_xiang_men_chuan_gan_qi
+          state: "off"
+      then:
         - device_id: 2c860e3b2531c3a912998507ceb7c400
           domain: text
           entity_id: 23433649854710410e2206d0287850fe
           type: set_value
-          value: 冰箱已关闭
-    - sequence:
-        - wait_for_trigger:
-            - platform: state
-              entity_id:
-                - binary_sensor.bing_xiang_men_chuan_gan_qi
-              from: null
-              to: "on"
-          timeout:
-            hours: 0
-            minutes: 1
-            seconds: 5
-            milliseconds: 0
-          continue_on_timeout: true
-        - device_id: 2c860e3b2531c3a912998507ceb7c400
-          domain: text
-          entity_id: 23433649854710410e2206d0287850fe
-          type: set_value
-          value: 没有关闭冰箱门
+          value: 冰箱门已关闭
+      else:
+        # 🚨 第三步：未关闭时重复提醒
+        - repeat:
+            count: 3
+            sequence:
+              - condition: state
+                entity_id: binary_sensor.bing_xiang_men_chuan_gan_qi
+                state: "on"
+              - device_id: 2c860e3b2531c3a912998507ceb7c400
+                domain: text
+                entity_id: 23433649854710410e2206d0287850fe
+                type: set_value
+                value: 没有关闭冰箱门
+              - service: rest_command.feishu_webhook1
+                data:
+                  message: >
+                    🚨 冰箱门未关闭！
+                    当前状态：{{ states('binary_sensor.bing_xiang_men_chuan_gan_qi') }}
+              - service: notify.mobile_app_shende_iphone
+                data:
+                  message: 冰箱门没有关哦哦哦
+                  title: 智能家居hass
+              - delay:
+                  hours: 0
+                  minutes: 2
+                  seconds: 10
+                  milliseconds: 0
