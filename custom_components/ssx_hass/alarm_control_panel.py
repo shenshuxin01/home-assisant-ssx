@@ -61,6 +61,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     def supported_features(self):
         return AlarmControlPanelEntityFeature.ARM_HOME \
                | AlarmControlPanelEntityFeature.ARM_AWAY \
+               | AlarmControlPanelEntityFeature.TRIGGER \
                | AlarmControlPanelEntityFeature.ARM_NIGHT
 
     def __init__(self):
