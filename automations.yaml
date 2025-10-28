@@ -60,6 +60,10 @@
                   message: 🚨 冰箱门未关闭！
                   title: 智能家居
                   data: {}
+              - service: alarm_control_panel.alarm_trigger
+                target:
+                  entity_id: alarm_control_panel.gong_hua_jia_yuan_jian_kong_mian_ban
+                data: { }
               - delay:
                   hours: 0
                   minutes: 2
