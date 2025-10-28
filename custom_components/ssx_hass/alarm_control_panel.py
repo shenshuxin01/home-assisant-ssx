@@ -41,6 +41,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     _attr_changed_by = 'ssx001'
     # code_format	string	None	Regex for code format or None if no code is required.
     _attr_code_format = CodeFormat.TEXT
+    _attr_code_arm_required: bool = False
 
     # States
     # Value	Description

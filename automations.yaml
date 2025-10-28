@@ -55,10 +55,11 @@
                   message: >
                     🚨 冰箱门未关闭！
                     当前状态：{{ states('binary_sensor.bing_xiang_men_chuan_gan_qi') }}
-              - service: notify.mobile_app_shende_iphone
+              - service: notify.notify
                 data:
-                  message: 冰箱门没有关哦哦哦
-                  title: 智能家居hass
+                  message: 🚨 冰箱门未关闭！
+                  title: 智能家居
+                  data: {}
               - delay:
                   hours: 0
                   minutes: 2
