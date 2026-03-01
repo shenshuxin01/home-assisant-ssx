@@ -135,7 +135,7 @@ class MiniLightSwitch(SwitchEntity):
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init MiniLightSwitch start!')
-        self._is_on: bool = True
+        self._is_on: bool = False
         self._attr_device_info = "MiniLightSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "MiniLightSwitch_attr_unique_id"
 
