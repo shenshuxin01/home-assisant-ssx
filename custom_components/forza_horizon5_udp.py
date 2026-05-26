@@ -1,3 +1,4 @@
+import math
 import socket
 import struct
 
@@ -71,10 +72,7 @@ def parse_packet(data, fields):
 def udp_packet():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((UDP_IP, UDP_PORT))
-
     fields = load_dat_file('./FH4_packetformat.dat')
-    for f in fields:
-        print(f)
     print("等待数据...")
 
     while True:
@@ -96,7 +94,7 @@ def udp_packet():
         gear = telemetry["Gear"]
 
         kmh = speed * 3.6
-        print(f"speed: {kmh} km/h, rpm: {rpm}转速, gear: {gear} 档")
+        print(f"speed: {math.trunc(kmh)} km/h, rpm: {math.trunc(rpm)}转速, gear: {gear} 档")
 
 
 

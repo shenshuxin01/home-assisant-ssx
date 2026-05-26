@@ -24,7 +24,7 @@ font = ImageFont.truetype(
 LINE = 3
 
 
-def print_str(source_text: str):
+def print_str(source_text: str, delay_seconds: int=1):
     w = wrap_list(source_text)
     if len(w) <= 0:
         return
@@ -73,14 +73,14 @@ def print_str(source_text: str):
             "/tmp/hud.tmp.bmp",
             "/tmp/hud.bmp"
         )
-        time.sleep(1.5)
+        time.sleep(delay_seconds)
         start = start % LINE
         if len(full_list) == start:
             start = 0
         if start != 0:
             continue
 
-        time.sleep(1)
+        time.sleep(delay_seconds)
         if source_text is not None:
             print_str(source_text)
         break
