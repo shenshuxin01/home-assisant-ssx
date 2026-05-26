@@ -80,7 +80,7 @@ def print_str(source_text: str):
         if start != 0:
             continue
 
-        time.sleep(2)
+        time.sleep(1)
         if source_text is not None:
             print_str(source_text)
         break
