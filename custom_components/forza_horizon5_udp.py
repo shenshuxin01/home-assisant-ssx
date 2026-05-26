@@ -26,8 +26,11 @@ def load_dat_file(path):
     for line in lines:
         line = line.strip().replace(';', '')
         # 去掉注释
+        comment = ''
         if "//" in line:
-            line = line.split("//")[0].strip()
+            line_s = line.split("//")
+            line = line_s[0].strip()
+            comment = line_s[1].strip()
         # 跳过空行
         if not line:
             continue
@@ -40,6 +43,7 @@ def load_dat_file(path):
             continue
         fmt, size = TYPE_MAP[type_name]
         fields.append({
+            "comment": comment,
             "name": field_name,
             "fmt": fmt,
             "size": size,
@@ -77,29 +81,23 @@ def udp_packet():
         data, addr = sock.recvfrom(1500)
 
         telemetry = parse_packet(data, fields)
+        for e in fields:
+            value=telemetry[e["name"]]
+            # print(f"{e['name']}: {value} //comment{e['comment']}")
 
-        print(
 
-            telemetry["CurrentEngineRpm"],
-
-            telemetry["Gear"]
-
-        )
         # 速度 (m/s)
-        speed = struct.unpack_from('<f', data, 244)[0]
+        speed = telemetry["Speed"]
 
         # 发动机转速
-        rpm = struct.unpack_from('<f', data, 16)[0]
+        rpm = telemetry["CurrentEngineRpm"]
 
         # 当前档位
-        gear = struct.unpack_from('<b', data, 319)[0]
+        gear = telemetry["Gear"]
 
         kmh = speed * 3.6
+        print(f"speed: {kmh} km/h, rpm: {rpm}转速, gear: {gear} 档")
 
-        print(f"速度: {kmh:.1f} km/h")
-        print(f"转速: {rpm:.0f} RPM")
-        print(f"档位: {gear}")
-        print("----------------")
 
 
 if __name__ == '__main__':
