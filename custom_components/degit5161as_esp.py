@@ -50,42 +50,45 @@ segments = [
 ]
 
 digits = {
-    0: [1,1,1,1,1,1,0],
-    1: [0,1,1,0,0,0,0],
-    2: [1,1,0,1,1,0,1],
-    3: [1,1,1,1,0,0,1],
-    4: [0,1,1,0,0,1,1],
-    5: [1,0,1,1,0,1,1],
-    6: [1,0,1,1,1,1,1],
-    7: [1,1,1,0,0,0,0],
-    8: [1,1,1,1,1,1,1],
-    9: [1,1,1,1,0,1,1]
+    0: [1, 1, 1, 1, 1, 1, 0],
+    1: [0, 1, 1, 0, 0, 0, 0],
+    2: [1, 1, 0, 1, 1, 0, 1],
+    3: [1, 1, 1, 1, 0, 0, 1],
+    4: [0, 1, 1, 0, 0, 1, 1],
+    5: [1, 0, 1, 1, 0, 1, 1],
+    6: [1, 0, 1, 1, 1, 1, 1],
+    7: [1, 1, 1, 0, 0, 0, 0],
+    8: [1, 1, 1, 1, 1, 1, 1],
+    9: [1, 1, 1, 1, 0, 1, 1]
 }
 
-def set_seg(seg, on):
 
+def set_seg(seg, on):
     if on:
         seg.duty(brightness)
     else:
         seg.duty(0)
-def set_dp(hold:bool=True):
 
+
+def set_dp(hold: bool = True):
     if hold:
         seg_dp.duty(brightness)
     else:
         seg_dp.duty(0)
 
-def show_digit(num):
 
+def show_digit(num):
     pattern = digits[num]
 
     for i in range(7):
         set_seg(segments[i], pattern[i])
 
+
 def close_all():
     set_dp(False)
     for segment in segments:
-        set_seg(segment,False)
+        set_seg(segment, False)
+
 
 def pwm_dp():
     # 亮度范围
@@ -101,20 +104,13 @@ def pwm_dp():
     seg_dp.duty(0)
 
 
-def test():
+def test(n: int):
+    n = n % 10
     close_all()
-    sleep(2)
-    for n in range(10):
-
-        show_digit(n)
-
-        sleep(1)
-    close_all()
-    pwm_dp()
+    show_digit(n)
+    # pwm_dp()
     print("Done")
 
 
-
 if __name__ == '__main__':
-    test()
-    print(1)
+    test(1)
