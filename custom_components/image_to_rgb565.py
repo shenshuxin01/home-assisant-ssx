@@ -1,10 +1,13 @@
 from PIL import Image
 
-img = Image.open("./IMG_3384.jpeg")
-img = img.resize((240, 240))
-img = img.convert("RGB")
 
-with open("cat.rgb565", "wb") as f:
+def gen_rgb565_array(img_path):
+    img = Image.open(img_path)
+    img = img.resize((240, 240))
+    img = img.convert("RGB")
+
+    rgb565_array = bytearray()
+
     for y in range(240):
         for x in range(240):
             r, g, b = img.getpixel((x, y))
@@ -15,7 +18,15 @@ with open("cat.rgb565", "wb") as f:
                     (b >> 3)
             )
 
-            f.write(bytes([
-                rgb565 >> 8,
-                rgb565 & 0xFF
-            ]))
+            rgb565_array.append(rgb565 >> 8)
+            rgb565_array.append(rgb565 & 0xFF)
+
+    return rgb565_array
+
+
+def save_rgb565_file(rgb565_array, output_path="cat.rgb565"):
+    with open(output_path, "wb") as f:
+        f.write(rgb565_array)
+
+if __name__ == '__main__':
+    save_rgb565_file(gen_rgb565_array('./20260109-163317.bmp'))

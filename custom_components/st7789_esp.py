@@ -1,6 +1,8 @@
 from machine import Pin, SPI, PWM
 import st7789py
 import time
+import socket
+import _thread
 
 
 #
@@ -66,9 +68,7 @@ def test_default():
 
     buf = bytearray(width * block_lines * 2)
     with open("cat.rgb565", "rb") as f:
-
         for y in range(0, height, block_lines):
-
             h = min(block_lines, height - y)
             size = width * h * 2
             f.readinto(buf)
@@ -81,7 +81,75 @@ def test_default():
             )
 
 
+WIDTH = 240
+HEIGHT = 240
+
+BLOCK_LINES = 2
+
+BLOCK_SIZE = WIDTH * BLOCK_LINES * 2
+
+# 预分配 buffer
+buf = bytearray(BLOCK_SIZE)
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+sock.bind(("0.0.0.0", 9998))
+
+print("st7789 UDP listen 9998")
+
+
+def rest():
+    tft.reset()
+
+
+def udp_video_stream():
+    while True:
+
+        for y in range(0, HEIGHT, BLOCK_LINES):
+
+            h = min(BLOCK_LINES, HEIGHT - y)
+
+            size = WIDTH * h * 2
+
+            recv_size = 0
+
+            mv = memoryview(buf)
+
+            # 收满一块（MicroPython 没有 recvfrom_into）
+            while recv_size < size:
+                data, addr = sock.recvfrom(
+                    size - recv_size
+                )
+
+                data_len = len(data)
+
+                mv[recv_size:recv_size + data_len] = data
+
+                recv_size += data_len
+
+            # 显示
+            tft.blit_buffer(
+                mv[:size],
+                0,
+                y,
+                WIDTH,
+                h
+            )
+
+
+def test_udp_stream():
+    set_screen_background_light(300)
+    # 启动 UDP 视频流线程
+    _thread.start_new_thread(
+        udp_video_stream,
+        ()
+    )
+    print("udp stream thread started")
+
+
 if __name__ == '__main__':
     set_screen_background_light(300)
-    time.sleep(3)
+    tft.fill(st7789py.YELLOW)
+    time.sleep(1)
     test_default()
+    test_udp_stream()
