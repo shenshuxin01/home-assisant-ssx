@@ -106,10 +106,9 @@ def pwm_dp():
 
 def test(n: int):
     n = n % 10
-    close_all()
+    # close_all()
     show_digit(n)
     # pwm_dp()
-    print("Done")
 
 
 if __name__ == '__main__':

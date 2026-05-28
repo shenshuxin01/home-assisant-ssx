@@ -1,6 +1,6 @@
 from PIL import Image
 
-img = Image.open("./20260109-163317.bmp")
+img = Image.open("./IMG_3384.jpeg")
 img = img.resize((240, 240))
 img = img.convert("RGB")
 
