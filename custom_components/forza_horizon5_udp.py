@@ -1,9 +1,11 @@
 import math
 import socket
 import struct
+from datetime import time
+import time
 
 UDP_IP = "0.0.0.0"
-UDP_PORT = 8000
+UDP_PORT = 5555
 
 # dat类型 -> struct格式  https://github.com/richstokes/Forza-data-tools/blob/master/FH4_packetformat.dat
 TYPE_MAP = {
@@ -74,27 +76,35 @@ def udp_packet():
     sock.bind((UDP_IP, UDP_PORT))
     fields = load_dat_file('./FH4_packetformat.dat')
     print("等待数据...")
+    fps = 5  #每秒发送5次
 
+    interval = 1 / fps
     while True:
         data, addr = sock.recvfrom(1500)
+        sock.sendto(data, ('192.168.0.103', 5555))
 
         telemetry = parse_packet(data, fields)
         for e in fields:
-            value=telemetry[e["name"]]
+            value = telemetry[e["name"]]
             # print(f"{e['name']}: {value} //comment{e['comment']}")
-
 
         # 速度 (m/s)
         speed = telemetry["Speed"]
 
         # 发动机转速
         rpm = telemetry["CurrentEngineRpm"]
+        max_rpm = telemetry['EngineMaxRpm']
+        rpm16 = rpm / max_rpm * 16
 
         # 当前档位
         gear = telemetry["Gear"]
 
         kmh = speed * 3.6
-        print(f"speed: {math.trunc(kmh)} km/h, rpm: {math.trunc(rpm)}转速, gear: {gear} 档")
+        send_data = f"{math.trunc(kmh)},{math.trunc(rpm16)},{gear}"
+
+        sock.sendto(send_data.encode(), ('192.168.0.107', 9999))
+
+        # time.sleep(interval)
 
 
 
