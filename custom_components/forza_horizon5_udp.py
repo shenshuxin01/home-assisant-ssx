@@ -1,4 +1,5 @@
 import math
+import random
 import socket
 import struct
 from datetime import time
@@ -74,13 +75,22 @@ def parse_packet(data, fields):
 def udp_packet():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((UDP_IP, UDP_PORT))
+    # 非阻塞
+    sock.setblocking(False)
     fields = load_dat_file('./FH4_packetformat.dat')
     print("等待数据...")
     fps = 5  #每秒发送5次
 
     interval = 1 / fps
+    data = None
     while True:
-        data, addr = sock.recvfrom(1500)
+        time.sleep(interval)
+        # 把缓冲区里的包全部读完
+        while True:
+            try:
+                data, addr = sock.recvfrom(1500)
+            except BlockingIOError:
+                break
         sock.sendto(data, ('192.168.0.103', 5555))
 
         telemetry = parse_packet(data, fields)
@@ -94,18 +104,22 @@ def udp_packet():
         # 发动机转速
         rpm = telemetry["CurrentEngineRpm"]
         max_rpm = telemetry['EngineMaxRpm']
-        rpm16 = rpm / max_rpm * 16
+        rpm16 = 0 if max_rpm == 0 else rpm / max_rpm * 16
 
         # 当前档位
         gear = telemetry["Gear"]
+        # 横向G值
+        acceleration_x = telemetry["AccelerationX"]
 
         kmh = speed * 3.6
         send_data = f"{math.trunc(kmh)},{math.trunc(rpm16)},{gear}"
 
         sock.sendto(send_data.encode(), ('192.168.0.107', 9999))
-
-        # time.sleep(interval)
-
+        if random.randint(1, 200) == 1:
+            for field in fields:
+                co = field['comment']
+                va = telemetry[field["name"]]
+                print(f"{co}: {va}")
 
 
 if __name__ == '__main__':
