@@ -87,6 +87,7 @@ HEIGHT = 240
 BLOCK_LINES = 2
 
 BLOCK_SIZE = WIDTH * BLOCK_LINES * 2
+FRAME_START = b"\xAA\x55"
 
 # 预分配 buffer
 buf = bytearray(BLOCK_SIZE)
@@ -103,38 +104,46 @@ def rest():
 
 
 def udp_video_stream():
+    current_y = 0
+
     while True:
 
-        for y in range(0, HEIGHT, BLOCK_LINES):
+        data, addr = sock.recvfrom(BLOCK_SIZE + 16)
 
-            h = min(BLOCK_LINES, HEIGHT - y)
+        # 帧同步头
+        if data.startswith(FRAME_START):
+            tft.fill(st7789py.BLACK) #清屏
+            current_y = 0
+            data = data[2:]
 
-            size = WIDTH * h * 2
+        data_len = len(data)
 
-            recv_size = 0
+        if data_len == 0:
+            continue
 
-            mv = memoryview(buf)
+        mv = memoryview(buf)
 
-            # 收满一块（MicroPython 没有 recvfrom_into）
-            while recv_size < size:
-                data, addr = sock.recvfrom(
-                    size - recv_size
-                )
+        mv[:data_len] = data
 
-                data_len = len(data)
+        h = data_len // (WIDTH * 2)
 
-                mv[recv_size:recv_size + data_len] = data
+        if h <= 0:
+            continue
 
-                recv_size += data_len
+        # 显示当前块
+        tft.blit_buffer(
+            mv[:data_len],
+            0,
+            current_y,
+            WIDTH,
+            h
+        )
 
-            # 显示
-            tft.blit_buffer(
-                mv[:size],
-                0,
-                y,
-                WIDTH,
-                h
-            )
+        current_y += h
+
+        # 超出屏幕重新同步
+        if current_y >= HEIGHT:
+            current_y = 0
 
 
 def test_udp_stream():
