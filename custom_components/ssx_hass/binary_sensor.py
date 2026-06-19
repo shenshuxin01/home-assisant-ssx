@@ -31,7 +31,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([IceBinarySensor()])
+    add_entities([IceBinarySensor(),DeskPersonExistsBinarySensor()])
 
 
 class IceBinarySensor(BinarySensorEntity):
@@ -67,6 +67,10 @@ class IceBinarySensor(BinarySensorEntity):
 
 class DeskPersonExistsBinarySensor(BinarySensorEntity):
     """Representation of a sensor."""
+    # 深圳市海凌科电子有限公司 https://r0.hlktech.com/download/HLK-LD2410C-24G/1/HLK%20LD2410C生命存在感应模组说明书V1.09.pdf
+    # HLK - LD2410C
+    # 人体存在感应模组
+
     HOST = '192.168.0.107'
     PORT = 9997
 
