@@ -14,7 +14,7 @@ from . import DOMAIN
 import logging
 import datetime
 
-from .ssx_utils import exec_cmd_ret_out, exec_cmd_ret_code
+from .ssx_utils import exec_cmd_ret_out, exec_cmd_ret_code, sendTcpData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([N2ScreenSwitch(),MiniLightSwitch()])
+    add_entities([N2ScreenSwitch(), MiniLightSwitch(), DeskClockSwitch()])
 
 
 def lock_sessions(lock_sessions: bool = True):
@@ -44,6 +44,7 @@ def kill_time_background():
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
+
 
 class N2ScreenSwitch(SwitchEntity):
     """
@@ -79,7 +80,8 @@ class N2ScreenSwitch(SwitchEntity):
     def __init__(self):
         #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
         _LOGGER.info('init N2ScreenSwitch start!')
-        self._is_on: bool = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find("/home/ssx/apps/gluqlo/gluqlo") > 0
+        self._is_on: bool = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find(
+            "/home/ssx/apps/gluqlo/gluqlo") > 0
         self._attr_device_info = "N2ScreenSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "N2ScreenSwitch_attr_unique_id"
         self._attr_entity_picture = "/local/screen_time.png"
@@ -96,7 +98,8 @@ class N2ScreenSwitch(SwitchEntity):
     def update(self) -> None:
         _LOGGER.info('update N2ScreenSwitch start! %s', self._is_on)
         # /home/ssx/apps/gluqlo/gluqlo过滤有用！
-        self._is_on = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find("/home/ssx/apps/gluqlo/gluqlo") > 0
+        self._is_on = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find(
+            "/home/ssx/apps/gluqlo/gluqlo") > 0
 
     @property
     def is_on(self):
@@ -130,6 +133,7 @@ class N2ScreenSwitch(SwitchEntity):
         time.sleep(6)
         lock_sessions()
 
+
 class MiniLightSwitch(SwitchEntity):
     _attr_has_entity_name = True
 
@@ -139,6 +143,7 @@ class MiniLightSwitch(SwitchEntity):
         self._is_on: bool = False
         self._attr_device_info = "MiniLightSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "MiniLightSwitch_attr_unique_id"
+        self.turn_off()
 
     @property
     def extra_state_attributes(self):
@@ -152,7 +157,6 @@ class MiniLightSwitch(SwitchEntity):
     def update(self) -> None:
         _LOGGER.info('update MiniLightSwitch start! %s', self._is_on)
         # /home/ssx/apps/gluqlo/gluqlo过滤有用！
-
 
     @property
     def is_on(self):
@@ -178,6 +182,53 @@ class MiniLightSwitch(SwitchEntity):
         if str(result) == "close mini_light fenish":
             self._is_on = False
 
+
+class DeskClockSwitch(SwitchEntity):
+    _attr_has_entity_name = True
+    HOST = "192.168.0.108"
+    PORT = 82
+
+    def __init__(self):
+        #         _LOGGER.info(f'turn_on.kwargs={kwargs}')
+        _LOGGER.info('init DeskClockSwitch start!')
+        self._is_on: bool = False
+        self._attr_device_info = "DeskClockSwitch_attr_device_info"  # For automatic device registration
+        self._attr_unique_id = "DeskClockSwitch_attr_unique_id"
+        #初始化后调用关闭
+        self.turn_off()
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes."""
+        _LOGGER.debug(f'extra_state_attributes Run')
+        attributes = {
+            'friendly_name': f'数码时钟'
+        }
+        return attributes
+
+    def update(self) -> None:
+        _LOGGER.info('update DeskClockSwitch start! %s', self._is_on)
+        # /home/ssx/apps/gluqlo/gluqlo过滤有用！
+
+    @property
+    def is_on(self):
+        """If the switch is currently on or off."""
+        _LOGGER.info('is_on.self------------')
+        return self._is_on
+
+    def turn_on(self, **kwargs):
+        """Turn the switch on."""
+        _LOGGER.info(f'turn_on.self={kwargs}')
+        resp = sendTcpData(self.HOST, self.PORT, {"cmd": "displayEnable"})
+        if resp["success"]:
+            self._is_on = True
+
+    def turn_off(self, **kwargs):
+        """Turn the switch off."""
+        _LOGGER.info(f'turn_off.self={kwargs}')
+        resp = sendTcpData(self.HOST, self.PORT, {"cmd": "displayDisable"})
+        if resp["success"]:
+            self._is_on = False
 
 # class IceSwitch(SwitchEntity):
 #     _attr_has_entity_name = True
@@ -225,4 +276,3 @@ class MiniLightSwitch(SwitchEntity):
 #         """Turn the switch off."""
 #         _LOGGER.info(f'turn_off.self={kwargs}')
 #         # 不支持
-

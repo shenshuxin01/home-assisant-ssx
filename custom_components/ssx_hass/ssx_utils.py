@@ -2,8 +2,26 @@ import logging
 import subprocess
 
 import requests
-
+import json
+import socket
 _LOGGER = logging.getLogger(__name__)
+
+
+# data: {"cmd": "displayEnable"}
+def sendTcpData(host:str, port:int, data:object):
+    with socket.create_connection((host, port), timeout=2) as sock:
+        request = json.dumps(data) + "\n"
+        sock.sendall(request.encode("utf-8"))
+
+        # 持续读取响应，直到服务端关闭连接
+        response = b""
+        while True:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            response += chunk
+
+        return json.loads(response.decode("utf-8").strip())
 
 
 class DellR410Info:
