@@ -70,3 +70,25 @@
                   minutes: 2
                   seconds: 10
                   milliseconds: 0
+
+- id: auto_reload_ha1
+  alias: "重启HA"
+  description: ""
+  mode: single
+  triggers:
+    - trigger: time_pattern
+      minutes: "1"
+      seconds: "1"
+  conditions:
+    - condition: state
+      entity_id: light.cozylife_smart_light
+      state:
+        - unavailable
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 0
+  actions:
+    - action: homeassistant.restart
+      metadata: { }
+      data: { }

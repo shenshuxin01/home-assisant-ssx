@@ -1,0 +1,36 @@
+- name: 新建场景1
+  entities:
+    switch.giot_v5icm_fdb3_motor_reverse:
+      curtain.motor_reverse: true
+      friendly_name: 窗帘右 电机反向
+      state: "on"
+    cover.giot_v5icm_fdb3_curtain:
+      is_closed: false
+      current_position: 11
+      closed_position: 2
+      deviated_position: 2
+      state_is_closed: false
+      curtain.target_position: 11
+      curtain.current_position: 11
+      device_class: curtain
+      friendly_name: 窗帘右 Curtain
+      supported_features: 15
+      state: open
+    light.cozylife_smart_light:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      supported_color_modes:
+        - color_temp
+        - hs
+      color_mode: null
+      brightness: null
+      color_temp_kelvin: null
+      hs_color: null
+      rgb_color: null
+      xy_color: null
+      friendly_name: 卧室灯
+      supported_features: 0
+      state: "off"
+  metadata:
+    light.cozylife_smart_light:
+      entity_only: true
