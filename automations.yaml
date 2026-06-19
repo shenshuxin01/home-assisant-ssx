@@ -105,6 +105,10 @@
         hours: 0
         minutes: 0
         seconds: 10
+      from:
+        - unknown
+        - "off"
+        - unavailable
       to:
         - "on"
   conditions: []
@@ -131,7 +135,7 @@
             - "off"
           for:
             hours: 0
-            minutes: 0
+            minutes: 1
             seconds: 5
       then:
         - action: switch.turn_on
@@ -152,6 +156,10 @@
         hours: 0
         minutes: 0
         seconds: 10
+      from:
+        - unknown
+        - "on"
+        - unavailable
       to:
         - "off"
   conditions: []
@@ -178,7 +186,7 @@
             - "on"
           for:
             hours: 0
-            minutes: 0
+            minutes: 1
             seconds: 5
       then:
         - action: switch.turn_off
