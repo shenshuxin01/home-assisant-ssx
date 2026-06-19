@@ -82,6 +82,7 @@ class N2ScreenSwitch(SwitchEntity):
         self._is_on: bool = exec_cmd_ret_out("ssh root@node102 'ps -ef | grep gluqlo'").find("/home/ssx/apps/gluqlo/gluqlo") > 0
         self._attr_device_info = "N2ScreenSwitch_attr_device_info"  # For automatic device registration
         self._attr_unique_id = "N2ScreenSwitch_attr_unique_id"
+        self._attr_entity_picture = "/local/screen_time.png"
 
     @property
     def extra_state_attributes(self):
