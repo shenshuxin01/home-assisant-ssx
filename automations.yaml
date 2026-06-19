@@ -104,7 +104,7 @@
       for:
         hours: 0
         minutes: 0
-        seconds: 10
+        seconds: 12
       from:
         - unknown
         - "off"
@@ -155,7 +155,7 @@
       for:
         hours: 0
         minutes: 0
-        seconds: 10
+        seconds: 12
       from:
         - unknown
         - "on"

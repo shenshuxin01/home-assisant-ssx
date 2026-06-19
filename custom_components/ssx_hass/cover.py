@@ -18,7 +18,7 @@ from .ssx_utils import exec_cmd_ret_code
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = datetime.timedelta(seconds=60)
+SCAN_INTERVAL = datetime.timedelta(seconds=10)
 
 
 def setup_platform(
