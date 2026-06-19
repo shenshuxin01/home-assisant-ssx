@@ -10,4 +10,4 @@ docker run -d \
   -v /root/docker-volume/hass/config:/config \
   -v /run/dbus:/run/dbus:ro \
   -v /root/hass_ssh/.ssh:/root/.ssh \
-  --network=host registry.cn-hangzhou.aliyuncs.com/ssx-pub/home-assistant:2024.6.4-amd
+  --network=host ghcr.io/home-assistant/home-assistant:stable
