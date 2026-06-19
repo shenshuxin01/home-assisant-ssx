@@ -15,6 +15,12 @@ def get_service(hass, config, discovery_info=None):
 
 
 # ssx_cust_notify
+"""
+action: notify.ssx_cust_notify
+data:
+  message: "{\"message\":\"hello world\",\"emoji\":\"1f44b\"}"
+  title: message_type
+"""
 class SsxCustNotify(BaseNotificationService):
     BASE_URL = "http://192.168.0.111:5557/show_message"
 

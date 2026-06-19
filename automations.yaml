@@ -143,6 +143,20 @@
           target:
             entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
           data: {}
+    - repeat:
+        count: 3
+        sequence:
+          - action: notify.ssx_cust_notify
+            data:
+              message: "{\"message\":\"欢迎\",\"emoji\":\"1f44b\"}"
+              title: message_type
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
+
+
 
 - id: desk_person_not_exists
   alias: "卧室电脑桌检测到无人"
@@ -194,3 +208,15 @@
           target:
             entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
           data: {}
+    - repeat:
+        count: 3
+        sequence:
+          - action: notify.ssx_cust_notify
+            data:
+              message: "{\"message\":\"再见\",\"emoji\":\"1f4a4\"}"
+              title: message_type
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
