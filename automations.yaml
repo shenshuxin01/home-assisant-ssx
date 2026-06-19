@@ -92,3 +92,97 @@
     - action: homeassistant.restart
       metadata: { }
       data: { }
+
+- id: desk_person_exists
+  alias: "卧室电脑桌检测到有人"
+  description: "卧室电脑桌检测到有人"
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.dian_nao_zhuo_ren_ti_cun_zai_chuan_gan_qi
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 10
+      to:
+        - "on"
+  conditions: []
+  actions:
+    - if:
+        - condition: state
+          entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
+          state:
+            - "off"
+          for:
+            hours: 0
+            minutes: 0
+            seconds: 5
+      then:
+        - action: switch.turn_on
+          metadata: {}
+          target:
+            entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
+          data: {}
+    - if:
+        - condition: state
+          entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
+          state:
+            - "off"
+          for:
+            hours: 0
+            minutes: 0
+            seconds: 5
+      then:
+        - action: switch.turn_on
+          metadata: {}
+          target:
+            entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
+          data: {}
+
+- id: desk_person_not_exists
+  alias: "卧室电脑桌检测到无人"
+  description: "卧室电脑桌检测到无人"
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.dian_nao_zhuo_ren_ti_cun_zai_chuan_gan_qi
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 10
+      to:
+        - "off"
+  conditions: []
+  actions:
+    - if:
+        - condition: state
+          entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
+          state:
+            - "on"
+          for:
+            hours: 0
+            minutes: 0
+            seconds: 5
+      then:
+        - action: switch.turn_off
+          metadata: {}
+          target:
+            entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
+          data: {}
+    - if:
+        - condition: state
+          entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
+          state:
+            - "on"
+          for:
+            hours: 0
+            minutes: 0
+            seconds: 5
+      then:
+        - action: switch.turn_off
+          metadata: {}
+          target:
+            entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
+          data: {}
