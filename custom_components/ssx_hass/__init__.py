@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from homeassistant.const import Platform
+from homeassistant.helpers.discovery import async_load_platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
@@ -16,13 +17,19 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
         'ssxVar1': 'hello world'
     }
 
-    # hass.helpers.discovery.load_platform('sensor', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform(Platform.BINARY_SENSOR, DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
-    # hass.helpers.discovery.load_platform('lock', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform('camera', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform(Platform.ALARM_CONTROL_PANEL, DOMAIN, {}, config)
-    # hass.helpers.discovery.load_platform('text', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform(Platform.COVER, DOMAIN, {}, config)
+    # # hass.helpers.discovery.load_platform('sensor', DOMAIN, {}, config)
+    # hass.helpers.discovery.load_platform(Platform.BINARY_SENSOR, DOMAIN, {}, config)
+    # hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
+    # # hass.helpers.discovery.load_platform('lock', DOMAIN, {}, config)
+    # hass.helpers.discovery.load_platform('camera', DOMAIN, {}, config)
+    # hass.helpers.discovery.load_platform(Platform.ALARM_CONTROL_PANEL, DOMAIN, {}, config)
+    # # hass.helpers.discovery.load_platform('text', DOMAIN, {}, config)
+    # hass.helpers.discovery.load_platform(Platform.COVER, DOMAIN, {}, config)
+
+    hass.loop.call_soon_threadsafe(hass.async_create_task, async_load_platform(hass, Platform.BINARY_SENSOR, DOMAIN, {}, config))
+    hass.loop.call_soon_threadsafe(hass.async_create_task, async_load_platform(hass, 'switch', DOMAIN, {}, config))
+    hass.loop.call_soon_threadsafe(hass.async_create_task, async_load_platform(hass, Platform.CAMERA, DOMAIN, {}, config))
+    hass.loop.call_soon_threadsafe(hass.async_create_task, async_load_platform(hass, Platform.ALARM_CONTROL_PANEL, DOMAIN, {}, config))
+    hass.loop.call_soon_threadsafe(hass.async_create_task, async_load_platform(hass, Platform.COVER, DOMAIN, {}, config))
 
     return True
