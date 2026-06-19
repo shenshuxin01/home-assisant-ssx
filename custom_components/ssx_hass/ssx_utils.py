@@ -4,12 +4,13 @@ import subprocess
 import requests
 import json
 import socket
+
 _LOGGER = logging.getLogger(__name__)
 
 
 # data: {"cmd": "displayEnable"}
-def sendTcpData(host:str, port:int, data:object):
-    with socket.create_connection((host, port), timeout=2) as sock:
+def sendTcpData(host: str, port: int, data: object):
+    with socket.create_connection((host, port), timeout=10) as sock:
         request = json.dumps(data) + "\n"
         sock.sendall(request.encode("utf-8"))
 
@@ -22,6 +23,7 @@ def sendTcpData(host:str, port:int, data:object):
             response += chunk
 
         return json.loads(response.decode("utf-8").strip())
+
 
 
 def sendPostJson(url: str, data: object):
@@ -45,6 +47,7 @@ def sendGetJson(url: str):
     resp.raise_for_status()
 
     return resp.json()
+
 
 class DellR410Info:
     temperature = None

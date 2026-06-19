@@ -53,6 +53,11 @@ rest_command:
       { "msg_type": "text", "content": { "text": "{{ message }}" } }
     content_type: "application/json"
 
+notify:
+  - platform: ssx_hass
+    name: ssx_cust_notify
+
+
 # 自动化配置
 automation: !include automations.yaml
 

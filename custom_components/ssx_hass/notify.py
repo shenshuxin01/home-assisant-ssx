@@ -1,59 +1,45 @@
-"""Platform for notify integration."""
-from __future__ import annotations
-
-import datetime
 import json
-
-from homeassistant.components.notify import NotifyEntity
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-
-from . import DOMAIN
 import logging
-import random
-from ssx_utils import sendPostJson
+
+from homeassistant.components.notify import BaseNotificationService
+
+from .ssx_utils import sendPostJson
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = datetime.timedelta(seconds=10)
+
+def get_service(hass, config, discovery_info=None):
+    _LOGGER.info("Create SSX notify service")
+    _LOGGER.info("config=%s", config)
+    return SsxCustNotify()
 
 
-def setup_platform(
-        hass: HomeAssistant,
-        config: ConfigType,
-        add_entities: AddEntitiesCallback,
-        discovery_info: DiscoveryInfoType | None = None
-) -> None:
-    """Set up the sensor platform."""
-    # We only want this platform to be set up via discovery.
-    if discovery_info is None:
-        return
-    add_entities([DeskScreenST7789()])
+# ssx_cust_notify
+class SsxCustNotify(BaseNotificationService):
+    BASE_URL = "http://192.168.0.111:5557/show_message"
 
+    def send_message(self, message="", **kwargs):
+        title = kwargs.get("title")
 
-class DeskScreenST7789(NotifyEntity):
-    _attr_has_entity_name = True
-    BASE_URL = 'http://192.168.0.111:5557'
+        _LOGGER.info(
+            "send message title=%s message=%s",
+            title,
+            message,
+        )
 
-    def __init__(self):
-        _LOGGER.info('init DeskScreenST7789 start!')
-        self._attr_device_info = "ssx_DeskScreenST7789_attr_device_info"  # For automatic device registration
-        self._attr_unique_id = "ssx_DeskScreenST7789_attr_unique_id"
+        try:
+            if title == "message_type":
+                msg = json.loads(message)
 
-    # example
-    # @param message  '{"message":"hello world","emoji":"2728"}'
-    # @param title  'message_type'
-    def send_message(self, message: str, title: str | None = None) -> None:
-        """Send a message."""
-        _LOGGER.info(f"send message, title: {title}, message: {message}")
-        if title == 'message_type':
-            msg = json.loads(message)
-            resp = sendPostJson(self.BASE_URL, {
-                "message": msg["message"],
-                "emoji": msg["emoji"]
-            })
-            _LOGGER.info(f"resp: {resp}")
+                resp = sendPostJson(
+                    self.BASE_URL,
+                    {
+                        "message": msg["message"],
+                        "emoji": msg["emoji"],
+                    },
+                )
 
-        elif title == 'image_type':
-            img_path = message
+                _LOGGER.info("resp=%s", resp)
+
+        except Exception:
+            _LOGGER.error("send notify failed")
