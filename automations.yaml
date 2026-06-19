@@ -135,7 +135,7 @@
             - "off"
           for:
             hours: 0
-            minutes: 1
+            minutes: 0
             seconds: 5
       then:
         - action: switch.turn_on
@@ -186,7 +186,7 @@
             - "on"
           for:
             hours: 0
-            minutes: 1
+            minutes: 0
             seconds: 5
       then:
         - action: switch.turn_off
