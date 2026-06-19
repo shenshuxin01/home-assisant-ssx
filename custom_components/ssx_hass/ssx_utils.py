@@ -24,6 +24,28 @@ def sendTcpData(host:str, port:int, data:object):
         return json.loads(response.decode("utf-8").strip())
 
 
+def sendPostJson(url: str, data: object):
+    resp = requests.post(
+        url,
+        json=data,
+        timeout=2
+    )
+
+    resp.raise_for_status()
+
+    return resp.json()
+
+
+def sendGetJson(url: str):
+    resp = requests.get(
+        url,
+        timeout=2
+    )
+
+    resp.raise_for_status()
+
+    return resp.json()
+
 class DellR410Info:
     temperature = None
     speed = None

@@ -29,7 +29,8 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([DellR410TemperatureSensor(), DellR410SpeedSensor(), DellR410CpuSensor(), Node109GPUSensor(), Node109CPUSensor()])
+    add_entities([])
+    # add_entities([DellR410TemperatureSensor(), DellR410SpeedSensor(), DellR410CpuSensor(), Node109GPUSensor(), Node109CPUSensor()])
 
 
 
