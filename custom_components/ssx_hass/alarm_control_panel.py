@@ -6,7 +6,7 @@ import json
 import time
 
 from homeassistant.components.alarm_control_panel import AlarmControlPanelEntity, CodeFormat, \
-    AlarmControlPanelEntityFeature
+    AlarmControlPanelEntityFeature, AlarmControlPanelState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -55,7 +55,7 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     # arming	The alarm is arming.
     # disarming	The alarm is disarming.
     # triggered	The alarm is triggered.
-    _attr_state = 'armed_home'
+    # _attr_state = 'armed_home'
 
     @property
     def supported_features(self):
@@ -69,6 +69,8 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         _LOGGER.info('init Node12AlarmControlPanel start!')
         self._attr_device_info = "Node12AlarmControlPanelDevice"  # For automatic device registration
         self._attr_unique_id = "Node12AlarmControlPanelDeviceUnique"
+        self._attr_alarm_state = AlarmControlPanelState.ARMED_HOME
+        self._attr_code_arm_required = False
 
     @property
     def name(self) -> str:
@@ -87,36 +89,36 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
     def alarm_disarm(self, code=None) -> None:
         """Send disarm command."""
         _LOGGER.info(f'alarm_disarm Run,codeInfo:{code}')
-        self._attr_state = 'disarming'
+        self._attr_alarm_state = AlarmControlPanelState.DISARMING
         time.sleep(1)
-        self._attr_state = 'disarmed'
+        self._attr_alarm_state = AlarmControlPanelState.DISARMED
         # ssx_utils.play_text_homepod('alarm_disarm')
 
     def alarm_arm_home(self, code=None) -> None:
         """Send arm home command."""
         _LOGGER.info(f'alarm_arm_home Run,codeInfo:{code}')
-        self._attr_state = 'armed_home'
+        self._attr_alarm_state = AlarmControlPanelState.ARMED_HOME
         # ssx_utils.play_text_homepod('alarm_arm_home')
 
     def alarm_arm_away(self, code=None) -> None:
         """Send arm away command."""
         _LOGGER.info(f'alarm_arm_away Run,codeInfo:{code}')
-        self._attr_state = 'armed_away'
+        self._attr_alarm_state = AlarmControlPanelState.ARMED_AWAY
         # ssx_utils.play_text_homepod('alarm_arm_away')
 
     def alarm_arm_night(self, code=None) -> None:
         """Send arm night command."""
         _LOGGER.info(f'alarm_arm_night Run,codeInfo:{code}')
-        self._attr_state = 'armed_night'
+        self._attr_alarm_state = AlarmControlPanelState.ARMED_NIGHT
         # ssx_utils.play_text_homepod('alarm_arm_night')
 
     def alarm_trigger(self, code=None) -> None:
         """Send alarm trigger command."""
         _LOGGER.info(f'alarm_trigger Run,codeInfo:{code}')
-        self._attr_state = 'triggered'
+        self._attr_alarm_state = AlarmControlPanelState.TRIGGERED
 
     def update(self) -> None:
-        _LOGGER.info(f'update.method run!,state:{self._attr_state}')
+        _LOGGER.info(f'update.method run!,state:{self._attr_alarm_state}')
         # disarmed	The alarm is disarmed (off).
         # armed_home	The alarm is armed in home mode.
         # armed_away	The alarm is armed in away mode.
@@ -128,21 +130,21 @@ class Node12AlarmControlPanel(AlarmControlPanelEntity):
         # disarming	The alarm is disarming.
         # triggered	The alarm is triggered.
         # if 陌生人来访：
-        #     self._attr_state = 'arming'
+        #     self._attr_alarm_state = 'arming'
         # if 陌生人进门啦：
         #     self.alarm_trigger(None)
 
-        if 'disarmed'.__eq__(self._attr_state):
+        if 'disarmed'.__eq__(self._attr_alarm_state):
             return
 
         # info: ssx_utils.DellR410Node12CpuMemInfo = ssx_utils.getNode12CpuMemInfo()
         # _LOGGER.info(f'DellR410Node12CpuMemInfo:{info.cpuDesc}\n{info.memDesc}')
         # if float(info.cpu) > 500:
         #     _LOGGER.error(f'CPU异常:{info.cpuDesc}')
-        #     self._attr_state = 'pending'
+        #     self._attr_alarm_state = 'pending'
         #     self.alarm_trigger(None)
         # elif float(info.mem) > 80:
         #     _LOGGER.error(f'MEM异常:{info.memDesc}')
-        #     self._attr_state = 'pending'
+        #     self._attr_alarm_state = 'pending'
         #     self.alarm_trigger(None)
 
