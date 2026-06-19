@@ -4,10 +4,9 @@ from __future__ import annotations
 from homeassistant.components import ffmpeg
 
 from homeassistant.components.camera import (
-    SUPPORT_ON_OFF,
-    SUPPORT_STREAM,
     Camera, StreamType
 )
+from homeassistant.components.camera import CameraEntityFeature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -58,7 +57,7 @@ class EzvizCamera(Camera):
 
     @property
     def supported_features(self):
-        return SUPPORT_STREAM | SUPPORT_ON_OFF
+        return CameraEntityFeature.STREAM | CameraEntityFeature.ON_OFF
 
     async def async_camera_image(
         self, width: int | None = None, height: int | None = None

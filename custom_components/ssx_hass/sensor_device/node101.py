@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 
 import logging
 
@@ -39,7 +39,7 @@ class DellR410TemperatureSensor(SensorEntity):
     def native_unit_of_measurement(self) -> str:
         """Return the unit of measurement."""
         _LOGGER.debug('native_unit_of_measurement DellR410TemperatureSensor !')
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     def update(self) -> None:
         """Fetch new state data for the sensor.

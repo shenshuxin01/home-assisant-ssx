@@ -5,9 +5,10 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.components.light import LightEntity
 # from homeassistant.components.light import *
+from homeassistant.components.light import ColorMode
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
+    # ATTR_COLOR_TEMP,
     ATTR_EFFECT,
     ATTR_FLASH,
     ATTR_HS_COLOR,
@@ -27,7 +28,7 @@ from homeassistant.components.light import (
     SUPPORT_TRANSITION,
     LightEntity,
 )
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -165,7 +166,7 @@ class CozyLifeLight(LightEntity):
         self._attr_is_on = True
         brightness = kwargs.get(ATTR_BRIGHTNESS)
         # 153 ~ 500
-        colortemp = kwargs.get(ATTR_COLOR_TEMP)
+        colortemp = kwargs.get(ColorMode.COLOR_TEMP)
         # tuple
         hs_color = kwargs.get(ATTR_HS_COLOR)
         rgb = kwargs.get(ATTR_RGB_COLOR)

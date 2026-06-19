@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import requests
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
-from homeassistant.const import TEMP_CELSIUS
+# from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfTemperature
 
 import logging
 
@@ -35,7 +36,8 @@ class Node109GPUSensor(SensorEntity):
     @property
     def native_unit_of_measurement(self) -> str:
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        # return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     def update(self) -> None:
         """Fetch new state data for the sensor.
@@ -73,7 +75,7 @@ class Node109CPUSensor(SensorEntity):
     @property
     def native_unit_of_measurement(self) -> str:
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     def update(self) -> None:
         """Fetch new state data for the sensor.
