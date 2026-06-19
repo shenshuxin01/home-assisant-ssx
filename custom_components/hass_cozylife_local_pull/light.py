@@ -12,20 +12,20 @@ from homeassistant.components.light import (
     ATTR_EFFECT,
     ATTR_FLASH,
     ATTR_HS_COLOR,
-    ATTR_KELVIN,
+    # ATTR_KELVIN,
     ATTR_RGB_COLOR,
-    ATTR_TRANSITION,
-    COLOR_MODE_BRIGHTNESS,
-    COLOR_MODE_COLOR_TEMP,
-    COLOR_MODE_HS,
-    COLOR_MODE_ONOFF,
-    COLOR_MODE_RGB,
-    COLOR_MODE_UNKNOWN,
-    FLASH_LONG,
-    FLASH_SHORT,
-    SUPPORT_EFFECT,
-    SUPPORT_FLASH,
-    SUPPORT_TRANSITION,
+    # ATTR_TRANSITION,
+    # COLOR_MODE_BRIGHTNESS,
+    # COLOR_MODE_COLOR_TEMP,
+    # COLOR_MODE_HS,
+    # COLOR_MODE_ONOFF,
+    # COLOR_MODE_RGB,
+    # COLOR_MODE_UNKNOWN,
+    # FLASH_LONG,
+    # FLASH_SHORT,
+    # SUPPORT_EFFECT,
+    # SUPPORT_FLASH,
+    # SUPPORT_TRANSITION,
     LightEntity,
 )
 from homeassistant.const import UnitOfTemperature
@@ -85,9 +85,9 @@ class CozyLifeLight(LightEntity):
     # _attr_hs_color = None
     _tcp_client = None
     
-    _attr_supported_color_modes = {COLOR_MODE_BRIGHTNESS, COLOR_MODE_ONOFF}
-    _attr_color_mode = COLOR_MODE_BRIGHTNESS
-    
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS, ColorMode.ONOFF}
+    _attr_color_mode = ColorMode.BRIGHTNESS
+
     # _unique_id = str
     # _attr_is_on = True
     # _name = str
@@ -106,12 +106,12 @@ class CozyLifeLight(LightEntity):
                      f'{self._attr_supported_color_modes}.dpid={tcp_client.dpid}')
         # h s
         if 3 in tcp_client.dpid:
-            self._attr_color_mode = COLOR_MODE_COLOR_TEMP
-            self._attr_supported_color_modes.add(COLOR_MODE_COLOR_TEMP)
+            self._attr_color_mode = ColorMode.COLOR_TEMP
+            self._attr_supported_color_modes.add(ColorMode.COLOR_TEMP)
         
         if 5 in tcp_client.dpid or 6 in tcp_client.dpid:
-            self._attr_color_mode = COLOR_MODE_HS
-            self._attr_supported_color_modes.add(COLOR_MODE_HS)
+            self._attr_color_mode = ColorMode.HS
+            self._attr_supported_color_modes.add(ColorMode.HS)
         
         _LOGGER.info(f'after:{self._unique_id}._attr_color_mode={self._attr_color_mode}._attr_supported_color_modes='
                      f'{self._attr_supported_color_modes}.dpid={tcp_client.dpid}')
