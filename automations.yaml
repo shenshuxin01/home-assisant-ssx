@@ -158,6 +158,14 @@
     - action: rest_command.node111_screen_active
       metadata: {}
       data: {}
+    - action: rest_command.sh1106_emotion
+      metadata: {}
+      data:
+        path: setEmotion
+        param: emotion
+        value: >
+          {{ range(1,18) | random }}
+
 
 
 - id: desk_person_not_exists
@@ -222,3 +230,9 @@
               minutes: 0
               seconds: 1
               milliseconds: 0
+    - action: rest_command.sh1106_emotion
+      metadata: {}
+      data:
+        path: setEmotion
+        param: emotion
+        value: 0

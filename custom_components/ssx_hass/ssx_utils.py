@@ -33,6 +33,7 @@ def sendPostJson(url: str, data: object):
         timeout=2
     )
 
+
     resp.raise_for_status()
 
     return resp.json()
