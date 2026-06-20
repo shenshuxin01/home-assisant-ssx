@@ -52,6 +52,12 @@ rest_command:
     payload: >
       { "msg_type": "text", "content": { "text": "{{ message }}" } }
     content_type: "application/json"
+  node111_screen_active:
+    url: "http://node111:5557/node111_screen_active"
+    method: post
+    payload: >
+      { "info": "remote by: homeassistant->automations->desk_person_exists" }
+    content_type: "application/json"
 
 notify:
   - platform: ssx_hass

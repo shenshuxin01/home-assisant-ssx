@@ -155,7 +155,9 @@
               minutes: 0
               seconds: 1
               milliseconds: 0
-
+    - action: rest_command.node111_screen_active
+      metadata: {}
+      data: {}
 
 
 - id: desk_person_not_exists
