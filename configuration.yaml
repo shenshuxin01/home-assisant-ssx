@@ -58,6 +58,15 @@ rest_command:
     payload: >
       { "info": "remote by: homeassistant->automations->desk_person_exists" }
     content_type: "application/json"
+  sh1106_emotion:
+#  设置 表情[0-18] 其中0表示关闭表情 GET http://node111:9996/setEmotion?emotion=3
+#  设置 打开or关闭 表情动画眨眼和位移 GET http://node111:9996/setAutoMode?autoMode=0
+    url: http://node111:9996/{{path}}/{{param}}
+    method: get
+    payload: >
+      { "info": "remote by: homeassistant->automations->desk_person_exists" }
+    content_type: "application/json"
+
 
 notify:
   - platform: ssx_hass
