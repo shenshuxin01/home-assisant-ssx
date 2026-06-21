@@ -37,7 +37,9 @@ def setup_platform(
 def lock_sessions(lock_sessions: bool = True):
     lock = "" if lock_sessions else "un"
     # 锁定会话，解锁会话
-    os.system(f"ssh root@node102 'echo loginctl {lock}lock-sessions > /root/exec_cmd.sh'")
+    exec_result = os.system(f"ssh root@node102 'echo loginctl {lock}lock-sessions > /root/exec_cmd.sh'")
+    if exec_result != 0:
+        _LOGGER.error(f"Failed to lock sessions: {exec_result}, is lock_sessions:{lock_sessions}")
 
 
 def kill_time_background():
@@ -113,7 +115,7 @@ class N2ScreenSwitch(SwitchEntity):
 
         # 解锁会话
         lock_sessions(False)
-        # time.sleep(3)
+        time.sleep(2)
         # 显示屏保
         if not self._is_on:
             # root@node102:~# cat lock_background.sh
