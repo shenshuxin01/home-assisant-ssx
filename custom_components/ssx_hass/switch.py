@@ -42,8 +42,8 @@ def lock_sessions(lock_sessions: bool = True):
 
 def kill_time_background():
     exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
-    exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
+    # exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
+    # exec_cmd_ret_code("ssh root@node102 kill -9 `ssh root@node102 ps -ef | grep gluqlo | awk '{print $2}'`")
 
 
 class N2ScreenSwitch(SwitchEntity):
@@ -113,7 +113,7 @@ class N2ScreenSwitch(SwitchEntity):
 
         # 解锁会话
         lock_sessions(False)
-        time.sleep(3)
+        # time.sleep(3)
         # 显示屏保
         if not self._is_on:
             # root@node102:~# cat lock_background.sh
@@ -130,7 +130,7 @@ class N2ScreenSwitch(SwitchEntity):
         # 结束屏保
         kill_time_background()
         # 锁定会话
-        time.sleep(6)
+        # time.sleep(6)
         lock_sessions()
 
 
