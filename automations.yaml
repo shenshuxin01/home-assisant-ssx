@@ -109,50 +109,51 @@
         - "on"
   conditions: []
   actions:
-    - if:
-        - condition: state
-          entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
-          state:
-            - "off"
-      then:
-        - action: switch.turn_on
-          metadata: {}
-          target:
+    - parallel:
+      - if:
+          - condition: state
             entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
-          data: {}
-    - if:
-        - condition: state
-          entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
-          state:
-            - "off"
-      then:
-        - action: switch.turn_on
-          metadata: {}
-          target:
+            state:
+              - "off"
+        then:
+          - action: switch.turn_on
+            metadata: {}
+            target:
+              entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
+            data: {}
+      - if:
+          - condition: state
             entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
-          data: {}
-    - repeat:
-        count: 2
-        sequence:
-          - action: notify.ssx_cust_notify
-            data:
-              message: "{\"message\":\"欢迎\",\"emoji\":\"1f44b\"}"
-              title: message_type
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 0
-              milliseconds: 100
-    - action: rest_command.node111_screen_active
-      metadata: {}
-      data: {}
-    - action: rest_command.sh1106_emotion
-      metadata: {}
-      data:
-        path: setEmotion
-        param: emotion
-        value: >
-          {{ range(1,18) | random }}
+            state:
+              - "off"
+        then:
+          - action: switch.turn_on
+            metadata: {}
+            target:
+              entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
+            data: {}
+      - repeat:
+          count: 2
+          sequence:
+            - action: notify.ssx_cust_notify
+              data:
+                message: "{\"message\":\"欢迎\",\"emoji\":\"1f44b\"}"
+                title: message_type
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 100
+      - action: rest_command.node111_screen_active
+        metadata: {}
+        data: {}
+      - action: rest_command.sh1106_emotion
+        metadata: {}
+        data:
+          path: setEmotion
+          param: emotion
+          value: >
+            {{ range(1,18) | random }}
 
 
 
@@ -172,43 +173,44 @@
         - "off"
   conditions: []
   actions:
-    - if:
-        - condition: state
-          entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
-          state:
-            - "on"
-      then:
-        - action: switch.turn_off
-          metadata: {}
-          target:
+    - parallel:
+      - if:
+          - condition: state
             entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
-          data: {}
-    - if:
-        - condition: state
-          entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
-          state:
-            - "on"
-      then:
-        - action: switch.turn_off
-          metadata: {}
-          target:
+            state:
+              - "on"
+        then:
+          - action: switch.turn_off
+            metadata: {}
+            target:
+              entity_id: switch.ssx_hass_n2screenswitch_attr_unique_id
+            data: {}
+      - if:
+          - condition: state
             entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
-          data: {}
-    - repeat:
-        count: 2
-        sequence:
-          - action: notify.ssx_cust_notify
-            data:
-              message: "{\"message\":\"再见\",\"emoji\":\"1f4a4\"}"
-              title: message_type
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 0
-              milliseconds: 100
-    - action: rest_command.sh1106_emotion
-      metadata: {}
-      data:
-        path: setEmotion
-        param: emotion
-        value: 0
+            state:
+              - "on"
+        then:
+          - action: switch.turn_off
+            metadata: {}
+            target:
+              entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
+            data: {}
+      - repeat:
+          count: 2
+          sequence:
+            - action: notify.ssx_cust_notify
+              data:
+                message: "{\"message\":\"再见\",\"emoji\":\"1f4a4\"}"
+                title: message_type
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 100
+      - action: rest_command.sh1106_emotion
+        metadata: {}
+        data:
+          path: setEmotion
+          param: emotion
+          value: 0

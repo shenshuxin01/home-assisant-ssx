@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime
+import time
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.core import HomeAssistant
@@ -18,6 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 # 冰箱门开关传感器，因为冰箱有时候关不紧
+SCAN_INTERVAL = datetime.timedelta(seconds=3)
 
 
 def setup_platform(
@@ -35,7 +37,6 @@ def setup_platform(
 
 class IceBinarySensor(BinarySensorEntity):
     """Representation of a sensor."""
-    SCAN_INTERVAL = datetime.timedelta(seconds=4)
     def __init__(self) -> None:
         """Initialize the sensor."""
         self._attr_is_on = None
@@ -69,9 +70,9 @@ class DeskPersonExistsBinarySensor(BinarySensorEntity):
     # 深圳市海凌科电子有限公司 https://r0.hlktech.com/download/HLK-LD2410C-24G/1/HLK%20LD2410C生命存在感应模组说明书V1.09.pdf
     # HLK - LD2410C
     # 人体存在感应模组
-    SCAN_INTERVAL = datetime.timedelta(seconds=10)
     HOST = '192.168.0.107'
     PORT = 9997
+    last_update_time = time.perf_counter()*1000
 
     def __init__(self) -> None:
         """Initialize the sensor."""
@@ -90,6 +91,12 @@ class DeskPersonExistsBinarySensor(BinarySensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         _LOGGER.debug('update DeskPersonExistsBinarySensorDevice !')
+        now = time.perf_counter()*1000
+        diff_ms = now - self.last_update_time
+        self.last_update_time = now
+        if diff_ms * 1000 < 10:
+            return
+
         resp = sendTcpData(self.HOST, self.PORT, {"cmd": "hasPerson"})
 
         _LOGGER.info("exec ret %s", resp)
