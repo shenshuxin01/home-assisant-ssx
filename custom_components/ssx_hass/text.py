@@ -27,10 +27,10 @@ def setup_platform(
     # We only want this platform to be set up via discovery.
     if discovery_info is None:
         return
-    add_entities([DellR410CpuText()])
+    add_entities([VideoText()])
 
 
-class DellR410CpuText(TextEntity):
+class VideoText(TextEntity):
     _attr_has_entity_name = True
     # The value of the text.
     _attr_native_value = ''
