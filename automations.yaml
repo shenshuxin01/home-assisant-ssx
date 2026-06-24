@@ -9,7 +9,13 @@
       to: "on"
       for:
         seconds: 10
-
+  conditions:
+    - condition: and
+      conditions:
+        - condition: time
+          before: "00:00:00"
+        - condition: time
+          after: "08:00:00"
   action:
     # 🗣️ 第一步：冰箱门打开提示
     - device_id: 2c860e3b2531c3a912998507ceb7c400
@@ -177,13 +183,7 @@
         - unavailable
       to:
         - "off"
-  conditions:
-    - condition: and
-      conditions:
-        - condition: time
-          before: "00:00:00"
-        - condition: time
-          after: "08:00:00"
+  conditions: []
   actions:
     - parallel:
       - if:
