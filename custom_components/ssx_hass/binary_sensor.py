@@ -19,7 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 # 冰箱门开关传感器，因为冰箱有时候关不紧
-SCAN_INTERVAL = datetime.timedelta(seconds=3)
+SCAN_INTERVAL = datetime.timedelta(seconds=5)
 
 
 def setup_platform(
@@ -54,15 +54,14 @@ class IceBinarySensor(BinarySensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         _LOGGER.debug('update IceBinarySensorDevice !')
-        result = exec_cmd_ret_out("echo -e eeSx671Status | nc 192.168.0.104 81", 10)
+        #为什么是三遍呢？ 这个传感器不准
+        result = exec_cmd_ret_out("echo -e eeSx671Status | nc 192.168.0.104 81 && echo -e eeSx671Status | nc 192.168.0.104 81 && echo -e eeSx671Status | nc 192.168.0.104 81", 10)
+        # switch0switch0switch0
         _LOGGER.info("exec ret %s", result)
-        if str(result) == "switch1":
+        if str(result) == "switch1switch1switch1":
             self._attr_is_on = True
-        elif str(result) == "switch0":
+        elif str(result) == "switch0switch0switch0":
             self._attr_is_on = False
-        else:
-            _LOGGER.error("IceBinarySensorDevice status check fail! not ask resp on 192.168.0.104")
-            self._attr_is_on = None
 
 
 class DeskPersonExistsBinarySensor(BinarySensorEntity):
@@ -91,12 +90,6 @@ class DeskPersonExistsBinarySensor(BinarySensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         _LOGGER.debug('update DeskPersonExistsBinarySensorDevice !')
-        now = time.perf_counter()*1000
-        diff_ms = now - self.last_update_time
-        self.last_update_time = now
-        if diff_ms * 1000 < 10:
-            return
-
         resp = sendTcpData(self.HOST, self.PORT, {"cmd": "hasPerson"})
 
         _LOGGER.info("exec ret %s", resp)
