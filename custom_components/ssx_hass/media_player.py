@@ -81,11 +81,11 @@ class Node102MediaPlayer(MediaPlayerEntity):
             text=True
         )
 
-        result = subprocess.check_output(
-            ["ssh", "ssx@node102",
-             "sh", "/home/ssx/media_player_mpv.sh"],
-            text=True
-        )
+        # result = subprocess.check_output(
+        #     ["ssh", "ssx@node102",
+        #      "sh", "/home/ssx/media_player_mpv.sh"],
+        #     text=True
+        # )
         print(result)
 
 
@@ -93,6 +93,6 @@ class Node102MediaPlayer(MediaPlayerEntity):
 if __name__ == '__main__':
     vip_cookie = "b_lsid=1F7BDB1B_19EE6024E86; buvid4=DE8F6B6D-7D7E-0E85-D59E-911C5CEA179C59060-026061319-tzF4rXUqOJMi5TgdRcna5A%3D%3D; CURRENT_FNVAL=16; theme-tip-show=SHOWED; ogv_device_support_dolby=1; ogv_device_support_hdr=1; CURRENT_QUALITY=112; browser_resolution=1852-895; home_feed_column=5; bp_t_offset_266617553=1216055737151651840; bili_ticket=eyJhbGciOiJIUzI1NiIsImtpZCI6InMwMyIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODIxOTkwOTgsImlhdCI6MTc4MTkzOTgzOCwicGx0IjotMX0.WuSMelEFuv306ojs00arL8ytQ8UrPV_ZpVW1m5d2EBg; bili_ticket_expires=1782199038; theme-avatar-tip-show=SHOWED; buvid_fp=832b90dce0443ab8537c903d9fa30e6d; _uuid=410A4A8F6-F8A3-9C106-7F84-10C2EB57FDA6C58936infoc; LIVE_BUVID=AUTO2517801386827184; rpdid=|(J~kku|YlYR0J'u~~~ukku|R; sid=5003ph29; DedeUserID=266617553; DedeUserID__ckMd5=8de60720b44b1452; SESSDATA=57bc2052%2C1792674092%2C09a61%2A42CjDqmfuzl-LZ9-G7QJ0rI8wP5CSz1XCwapVE0vyAZHBplHDeKJrwNRswqvV5k618ePcSVk1SS0hkSThUdnhTeEJOaHBaMGNPWlNKd0tHeldTTTFJdmk5eklMRnJEZDF0Q043amxVbGktNV92NFhabFNiNFJLQmFTTVJ5MDBQZEdySlRtT2dRaFNBIIEC; bili_jct=6a69d1d967ef8887e8bd4947478082cf; b_nut=1777122060; buvid3=9A47080F-E7EB-C29F-B4EB-C6B23F66DD6060192infoc"
 
-    url = "https://www.bilibili.com/bangumi/play/ep4374512?theme=movie&from_spmid=666.25.episode.0"
+    url = "https://www.bilibili.com/video/BV1RHjU6gEyj/?t=9&spm_id_from=333.1007.tianma.10-4-38.click&vd_source=5e62320d0e3f6c0251d17c49ce88b79d"
 
     Node102MediaPlayer().play_media(MediaType.VIDEO,url,cookie=vip_cookie)

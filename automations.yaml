@@ -208,18 +208,23 @@
             target:
               entity_id: switch.ssx_hass_deskclockswitch_attr_unique_id
             data: {}
-      - repeat:
-          count: 2
-          sequence:
-            - action: notify.ssx_cust_notify
-              data:
-                message: "{\"message\":\"再见\",\"emoji\":\"1f4a4\"}"
-                title: message_type
-            - delay:
-                hours: 0
-                minutes: 0
-                seconds: 0
-                milliseconds: 100
+      - if:
+          - condition: time
+            after: "08:00:00"
+            before: "00:00:00"
+        then:
+          - repeat:
+              count: 2
+              sequence:
+                - action: notify.ssx_cust_notify
+                  data:
+                    message: "{\"message\":\"再见\",\"emoji\":\"1f4a4\"}"
+                    title: message_type
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 100
       - action: rest_command.sh1106_emotion
         metadata: {}
         data:
