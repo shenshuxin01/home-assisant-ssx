@@ -35,9 +35,11 @@ def setup_platform(
 
 
 def lock_sessions(lock_sessions: bool = True):
-    lock = "" if lock_sessions else "un"
+    if lock_sessions:
+        exec_result = os.system(f"ssh root@node102 'pgrep mpv > /dev/null || pgrep ffmpeg > /dev/null || pgrep ffplay > /dev/null || echo loginctl lock-sessions > /root/exec_cmd.sh'")
+    else:
+        exec_result = os.system(f"ssh root@node102 'echo loginctl unlock-sessions > /root/exec_cmd.sh'")
     # 锁定会话，解锁会话
-    exec_result = os.system(f"ssh root@node102 'echo loginctl {lock}lock-sessions > /root/exec_cmd.sh'")
     if exec_result != 0:
         _LOGGER.error(f"Failed to lock sessions: {exec_result}, is lock_sessions:{lock_sessions}")
 
@@ -123,7 +125,7 @@ class N2ScreenSwitch(SwitchEntity):
             # export DISPLAY=:0.0
             # /home/ssx/apps/gluqlo/gluqlo -f -s 1.4
             # os.system("ssh root@node102 '~/lock_background.sh'")
-            os.system(f"ssh root@node102 'echo /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 > /root/exec_cmd.sh'")
+            os.system(f"ssh root@node102 'pgrep mpv > /dev/null || pgrep ffmpeg > /dev/null || pgrep ffplay > /dev/null || echo /home/ssx/apps/gluqlo/gluqlo -f -s 1.4 > /root/exec_cmd.sh'")
 
     # 提前设置锁屏超时时间：永不
     def turn_off(self, **kwargs):
