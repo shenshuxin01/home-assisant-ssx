@@ -231,3 +231,55 @@
           path: setEmotion
           param: emotion
           value: 0
+
+- id: touyingyi_kodi_on
+  alias: 投影仪瑞格尔开机
+  description: ""
+  mode: single
+  triggers:
+    - device_id: b9bf70d947c3a08ea9bf79973949e091
+      domain: kodi
+      entity_id: ba1df00269e1525e1e6a931d99078dd6
+      type: turn_on
+      trigger: device
+  conditions: [ ]
+  actions:
+    - repeat:
+        count: 2
+        sequence:
+          - action: media_player.turn_on
+            metadata: { }
+            target:
+              entity_id: media_player.miir_ir01_5744_ir_projector_control
+            data: { }
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
+
+- id: touyingyi_kodi_off
+  alias: 投影仪瑞格尔关机
+  description: ""
+  mode: single
+  triggers:
+    - device_id: b9bf70d947c3a08ea9bf79973949e091
+      domain: kodi
+      entity_id: ba1df00269e1525e1e6a931d99078dd6
+      type: turn_off
+      trigger: device
+  conditions: [ ]
+  actions:
+    - repeat:
+        count: 2
+        sequence:
+          - action: media_player.turn_off
+            metadata: { }
+            target:
+              entity_id: media_player.miir_ir01_5744_ir_projector_control
+            data: { }
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 1
+              milliseconds: 0
